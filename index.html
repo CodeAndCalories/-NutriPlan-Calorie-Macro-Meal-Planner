@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NutriPlan — Calorie & Macro Meal Planner</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #faf9f6;
+    --surface: #ffffff;
+    --surface2: #f4f2ed;
+    --border: #e8e4db;
+    --text: #1a1815;
+    --text2: #5c564e;
+    --text3: #9c9388;
+    --accent: #2d6a4f;
+    --accent-light: #d8f3dc;
+    --accent2: #e76f51;
+    --accent2-light: #fde8e2;
+    --warn: #e9c46a;
+    --warn-light: #fdf5dc;
+    --err: #c0392b;
+    --err-light: #fde8e6;
+    --radius: 12px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.07);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--text);
+    color: #fff;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  header h1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1.7rem;
+    letter-spacing: -0.5px;
+  }
+  header h1 span { color: #74c69d; }
+  header p { color: rgba(255,255,255,0.55); font-size: 0.82rem; margin-left: auto; }
+
+  /* LAYOUT */
+  .app-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    overflow-y: auto;
+    position: sticky;
+    top: 65px;
+    height: calc(100vh - 65px);
+  }
+
+  /* MAIN */
+  .main { padding: 28px 28px 48px; overflow-x: hidden; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.05rem;
+    margin-bottom: 14px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon { font-size: 1rem; }
+
+  /* FORM ELEMENTS */
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+  input[type=number], input[type=text], select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: var(--bg);
+    color: var(--text);
+    transition: border-color 0.2s;
+    margin-bottom: 12px;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+  input.error { border-color: var(--err); }
+
+  .helper { font-size: 0.75rem; color: var(--text3); margin-top: -8px; margin-bottom: 10px; }
+  .error-msg { font-size: 0.75rem; color: var(--err); margin-top: -8px; margin-bottom: 8px; display: none; }
+  .error-msg.show { display: block; }
+
+  /* TOGGLE */
+  .toggle-group {
+    display: flex;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .toggle-group button {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: var(--bg);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.18s;
+  }
+  .toggle-group button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* CHECKBOXES */
+  .checkbox-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .checkbox-item input { width: auto; margin-bottom: 0; cursor: pointer; accent-color: var(--accent); }
+  .checkbox-item span { font-size: 0.85rem; color: var(--text2); font-weight: 400; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    font-size: 0.95rem;
+    margin-top: 4px;
+  }
+  .btn-primary:hover { background: #245e44; }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger { background: var(--err-light); color: var(--err); border: 1.5px solid #f5c6c2; }
+  .btn-danger:hover { background: #f5c6c2; }
+  .btn-sm { padding: 5px 10px; font-size: 0.78rem; border-radius: 6px; }
+  .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 4px; border-radius: 6px; transition: background 0.15s; }
+  .btn-icon:hover { background: var(--surface2); }
+
+  /* WEEK PLAN */
+  .week-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .week-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    color: var(--text);
+  }
+  .week-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .day-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .day-header-left { display: flex; align-items: center; gap: 10px; }
+  .day-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+  }
+  .day-calories {
+    font-size: 0.82rem;
+    color: var(--text2);
+  }
+  .day-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge-ok { background: var(--accent-light); color: var(--accent); }
+  .badge-warn { background: var(--warn-light); color: #7d6a20; }
+  .badge-over { background: var(--err-light); color: var(--err); }
+
+  .day-body { padding: 0; }
+  .day-body.collapsed { display: none; }
+
+  .meals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0;
+  }
+
+  .meal-slot {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 14px;
+    position: relative;
+  }
+  .meal-slot:last-child { border-right: none; }
+
+  .meal-slot-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 4px;
+  }
+  .meal-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .meal-desc { font-size: 0.78rem; color: var(--text2); margin-bottom: 8px; line-height: 1.4; }
+  .meal-macros {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .macro-pill {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .pill-cal { background: #fde8e2; color: #a84130; }
+  .pill-p { background: #d8f3dc; color: #1b5e20; }
+  .pill-c { background: #fff3cd; color: #7d6a20; }
+  .pill-f { background: #e3f2fd; color: #0d47a1; }
+
+  .meal-actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .lock-btn.locked { color: var(--accent); }
+
+  /* EXPAND RECIPE */
+  .recipe-panel {
+    border-top: 1px solid var(--border);
+    padding: 14px;
+    background: var(--bg);
+    display: none;
+    font-size: 0.82rem;
+  }
+  .recipe-panel.open { display: block; }
+  .recipe-section { margin-bottom: 10px; }
+  .recipe-section h5 { font-weight: 600; margin-bottom: 4px; color: var(--text); }
+  .recipe-section ul { padding-left: 16px; color: var(--text2); line-height: 1.7; }
+  .recipe-section ol { padding-left: 16px; color: var(--text2); line-height: 1.7; }
+
+  /* SERVINGS */
+  .servings-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  .servings-row input[type=number] {
+    width: 52px;
+    padding: 4px 7px;
+    font-size: 0.78rem;
+    margin-bottom: 0;
+  }
+
+  /* SUMMARY */
+  .summary-section { margin-bottom: 28px; }
+  .summary-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 14px;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .summary-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .summary-stat .stat-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .summary-stat .stat-label { font-size: 0.75rem; color: var(--text2); font-weight: 600; letter-spacing: 0.3px; }
+
+  /* PROGRESS BAR */
+  .progress-bar-wrap { background: var(--border); border-radius: 20px; height: 8px; overflow: hidden; flex: 1; }
+  .progress-bar-fill { height: 100%; border-radius: 20px; transition: width 0.4s; }
+  .fill-ok { background: var(--accent); }
+  .fill-warn { background: var(--warn); }
+  .fill-over { background: var(--err); }
+  .day-progress { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .day-progress-label { font-size: 0.72rem; color: var(--text3); white-space: nowrap; }
+
+  /* GROCERY */
+  .grocery-section { margin-top: 32px; }
+  .grocery-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 14px;
+  }
+  .grocery-actions { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .grocery-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .grocery-category {
+    border-bottom: 1px solid var(--border);
+  }
+  .grocery-cat-header {
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: var(--surface2);
+    color: var(--text2);
+  }
+  .grocery-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+  .grocery-item:last-child { border-bottom: none; }
+  .grocery-item input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
+  .grocery-item.checked span { text-decoration: line-through; color: var(--text3); }
+  .grocery-qty { color: var(--text3); font-size: 0.8rem; white-space: nowrap; }
+
+  /* ALERT */
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .alert-warn { background: var(--warn-light); color: #7d6a20; border: 1px solid #f0d47c; }
+  .alert-err { background: var(--err-light); color: var(--err); border: 1px solid #f5c6c2; }
+  .alert-ok { background: var(--accent-light); color: var(--accent); border: 1px solid #a8d5b5; }
+  #alerts { margin-bottom: 16px; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 64px 24px;
+    color: var(--text3);
+  }
+  .empty-state .es-icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state h3 { font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: var(--text2); margin-bottom: 6px; }
+  .empty-state p { font-size: 0.85rem; }
+
+  /* SECTION DIVIDER */
+  .section-sep { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .app-layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+    .main { padding: 20px 16px 48px; }
+    header { padding: 14px 18px; }
+    header p { display: none; }
+    .meals-grid { grid-template-columns: 1fr; }
+    .meal-slot { border-right: none; }
+  }
+
+  .divider-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin: 16px 0 8px;
+  }
+
+  .tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; background: var(--surface2); color: var(--text2); margin: 2px; }
+
+  /* Tooltip */
+  [data-tip] { position: relative; cursor: help; }
+  [data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    max-width: 200px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 200;
+    font-weight: 400;
+    font-family: 'DM Sans', sans-serif;
+  }
+  [data-tip]:hover::after { opacity: 1; }
+
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #plan-area { min-height: 200px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Nutri<span>Plan</span></h1>
+  <p>Calorie &amp; Macro Meal Planner</p>
+</header>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <!-- Target Mode -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🎯</span> Calorie Targets</div>
+
+      <div class="toggle-group" style="margin-bottom:10px;">
+        <button id="btn-daily" class="active" onclick="setMode('daily')">Daily</button>
+        <button id="btn-weekly" onclick="setMode('weekly')">Weekly</button>
+      </div>
+      <p class="helper" id="mode-helper">Set your calorie goal per day.</p>
+
+      <label for="cal-input" id="cal-label">Calories per Day</label>
+      <input type="number" id="cal-input" placeholder="e.g. 2000" min="800" max="6000" value="2000">
+      <div class="error-msg" id="cal-err">Enter a valid calorie value (800–6000).</div>
+      <p class="helper" id="cal-derived" style="display:none"></p>
+
+      <label>Macro Format</label>
+      <div class="toggle-group">
+        <button id="btn-grams" class="active" onclick="setMacroMode('grams')">Grams</button>
+        <button id="btn-pct" onclick="setMacroMode('percent')">Percent</button>
+      </div>
+
+      <div id="macro-inputs">
+        <label for="p-input">Protein <span data-tip="Muscle maintenance & satiety">ℹ️</span></label>
+        <input type="number" id="p-input" placeholder="g" min="0" max="500" value="150">
+        <label for="c-input">Carbohydrates <span data-tip="Primary energy source">ℹ️</span></label>
+        <input type="number" id="c-input" placeholder="g" min="0" max="700" value="225">
+        <label for="f-input">Fat <span data-tip="Hormones & absorption">ℹ️</span></label>
+        <input type="number" id="f-input" placeholder="g" min="0" max="300" value="67">
+        <div class="error-msg" id="macro-err">Percentages must sum to 100.</div>
+      </div>
+    </div>
+
+    <!-- Preferences -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🥗</span> Preferences</div>
+      <div class="checkbox-group">
+        <label class="checkbox-item"><input type="checkbox" id="pref-hp"><span>High Protein</span></label>
+        <label class="checkbox-item"><input type="checkbox" id="pref-veg"><span>Vegetarian</span></label>
+        <label class="checkbox-item"><input type="checkbox" id="pref-df"><span>Dairy Free</span></label>
+        <label class="checkbox-item"><input type="checkbox" id="pref-gf"><span>Gluten Free</span></label>
+        <label class="checkbox-item"><input type="checkbox" id="pref-bf"><span>Budget Friendly</span></label>
+        <label class="checkbox-item"><input type="checkbox" id="pref-snack"><span>Include Snacks</span></label>
+      </div>
+      <label for="exclude-input">Exclude Ingredients</label>
+      <input type="text" id="exclude-input" placeholder="e.g. nuts, shrimp, tofu">
+      <p class="helper">Separate with commas.</p>
+    </div>
+
+    <!-- Generate -->
+    <button class="btn btn-primary" id="generate-btn" onclick="generatePlan()">
+      🍽️ Generate Meal Plan
+    </button>
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button class="btn btn-secondary" style="flex:1;font-size:0.8rem;" onclick="resetAll()">↩ Reset</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div id="alerts"></div>
+
+    <div id="plan-area">
+      <div class="empty-state">
+        <div class="es-icon">🥦</div>
+        <h3>Ready to plan your meals?</h3>
+        <p>Set your calorie and macro targets on the left, then click Generate Meal Plan to build your personalized week.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+'use strict';
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let state = {
+  mode: 'daily',        // 'daily' | 'weekly'
+  calories: 2000,
+  macroMode: 'grams',   // 'grams' | 'percent'
+  protein: 150,
+  carbs: 225,
+  fat: 67,
+  prefs: {
+    highProtein: false, vegetarian: false, dairyFree: false,
+    glutenFree: false, budgetFriendly: false, snacks: false
+  },
+  excludes: [],
+  plan: null,           // 7-day plan array
+  servings: {}          // key: "dayIdx-mealType" => servings count
+};
+
+// ─── DATASET ────────────────────────────────────────────────────────────────
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+// Each meal: { id, name, desc, tags[], ingredients[{name,qty,unit}], steps[], nutrition:{cal,p,c,f} }
+// Tags: vegetarian, dairyFree, glutenFree, highProtein, budgetFriendly
+// Categories: breakfast, lunch, dinner, snack
+
+const MEALS = {
+breakfast: [
+  { id:'B1', name:'Greek Yogurt Parfait', desc:'Creamy yogurt layered with berries and granola',
+    tags:['vegetarian','highProtein'], ingredients:[
+      {name:'Greek yogurt, plain',qty:200,unit:'g'},{name:'Mixed berries',qty:80,unit:'g'},
+      {name:'Granola',qty:40,unit:'g'},{name:'Honey',qty:10,unit:'g'}],
+    steps:['Layer yogurt in a bowl.','Top with berries and granola.','Drizzle honey and serve.'],
+    nutrition:{cal:340,p:22,c:46,f:6} },
+
+  { id:'B2', name:'Avocado Toast with Eggs', desc:'Smashed avocado on whole grain toast with poached eggs',
+    tags:['vegetarian','highProtein'], ingredients:[
+      {name:'Whole grain bread',qty:2,unit:'slices'},{name:'Avocado',qty:1,unit:'medium'},
+      {name:'Eggs',qty:2,unit:'large'},{name:'Red pepper flakes',qty:1,unit:'pinch'},
+      {name:'Salt & pepper',qty:1,unit:'to taste'},{name:'Lemon juice',qty:5,unit:'ml'}],
+    steps:['Toast bread until golden.','Mash avocado with lemon, salt, and red pepper flakes.','Poach or fry eggs to your liking.','Spread avo mix on toast, top with eggs.'],
+    nutrition:{cal:420,p:21,c:38,f:20} },
+
+  { id:'B3', name:'Oatmeal with Banana', desc:'Hearty rolled oats with sliced banana and almond butter',
+    tags:['vegetarian','dairyFree','budgetFriendly'], ingredients:[
+      {name:'Rolled oats',qty:80,unit:'g'},{name:'Water or oat milk',qty:240,unit:'ml'},
+      {name:'Banana',qty:1,unit:'medium'},{name:'Almond butter',qty:15,unit:'g'},
+      {name:'Cinnamon',qty:1,unit:'tsp'}],
+    steps:['Cook oats in liquid over medium heat for 5 mins.','Top with sliced banana and almond butter.','Sprinkle cinnamon.'],
+    nutrition:{cal:390,p:12,c:62,f:11} },
+
+  { id:'B4', name:'Veggie Omelette', desc:'Fluffy eggs stuffed with bell pepper, onion, and spinach',
+    tags:['vegetarian','highProtein','glutenFree'], ingredients:[
+      {name:'Eggs',qty:3,unit:'large'},{name:'Bell pepper',qty:50,unit:'g'},
+      {name:'Spinach',qty:30,unit:'g'},{name:'Onion',qty:30,unit:'g'},
+      {name:'Olive oil',qty:5,unit:'ml'},{name:'Salt & pepper',qty:1,unit:'to taste'}],
+    steps:['Whisk eggs with salt and pepper.','Sauté veggies in oil 3 mins.','Pour eggs over veggies, cook until set, fold.'],
+    nutrition:{cal:260,p:21,c:8,f:17} },
+
+  { id:'B5', name:'Protein Smoothie', desc:'Banana, protein powder, oat milk, and peanut butter blended smooth',
+    tags:['dairyFree','highProtein'], ingredients:[
+      {name:'Banana',qty:1,unit:'medium'},{name:'Vanilla protein powder',qty:30,unit:'g'},
+      {name:'Oat milk',qty:240,unit:'ml'},{name:'Peanut butter',qty:15,unit:'g'},
+      {name:'Ice',qty:4,unit:'cubes'}],
+    steps:['Add all ingredients to blender.','Blend until smooth.','Pour and enjoy.'],
+    nutrition:{cal:370,p:30,c:41,f:10} },
+
+  { id:'B6', name:'Cottage Cheese Bowl', desc:'Cottage cheese with pineapple chunks and flaxseeds',
+    tags:['vegetarian','highProtein','glutenFree'], ingredients:[
+      {name:'Cottage cheese',qty:200,unit:'g'},{name:'Pineapple chunks',qty:80,unit:'g'},
+      {name:'Flaxseeds',qty:10,unit:'g'},{name:'Honey',qty:5,unit:'g'}],
+    steps:['Scoop cottage cheese into bowl.','Add pineapple and flaxseeds.','Drizzle honey.'],
+    nutrition:{cal:270,p:28,c:30,f:5} },
+
+  { id:'B7', name:'Whole Grain Pancakes', desc:'Fluffy whole wheat pancakes with maple syrup and fresh berries',
+    tags:['vegetarian','budgetFriendly'], ingredients:[
+      {name:'Whole wheat flour',qty:120,unit:'g'},{name:'Egg',qty:1,unit:'large'},
+      {name:'Milk',qty:180,unit:'ml'},{name:'Baking powder',qty:5,unit:'g'},
+      {name:'Maple syrup',qty:20,unit:'ml'},{name:'Mixed berries',qty:60,unit:'g'}],
+    steps:['Mix flour, baking powder, egg, and milk into batter.','Cook on a non-stick pan over medium heat until bubbles form; flip.','Top with berries and maple syrup.'],
+    nutrition:{cal:380,p:14,c:68,f:6} },
+
+  { id:'B8', name:'Egg & Turkey Wrap', desc:'Scrambled eggs and turkey sausage in a whole wheat wrap',
+    tags:['highProtein','budgetFriendly'], ingredients:[
+      {name:'Whole wheat tortilla',qty:1,unit:'large'},{name:'Eggs',qty:2,unit:'large'},
+      {name:'Turkey sausage',qty:60,unit:'g'},{name:'Shredded cheddar',qty:20,unit:'g'},
+      {name:'Salsa',qty:30,unit:'g'}],
+    steps:['Scramble eggs in a pan.','Cook turkey sausage crumbles.','Layer eggs, sausage, cheese, salsa in tortilla. Roll.'],
+    nutrition:{cal:430,p:32,c:35,f:16} },
+
+  { id:'B9', name:'Overnight Chia Oats', desc:'Chia seeds and oats soaked overnight in almond milk',
+    tags:['vegetarian','dairyFree','glutenFree'], ingredients:[
+      {name:'Rolled oats',qty:60,unit:'g'},{name:'Chia seeds',qty:15,unit:'g'},
+      {name:'Almond milk',qty:200,unit:'ml'},{name:'Vanilla extract',qty:2,unit:'ml'},
+      {name:'Berries',qty:60,unit:'g'}],
+    steps:['Combine oats, chia, almond milk, and vanilla in a jar.','Refrigerate overnight.','Top with berries before serving.'],
+    nutrition:{cal:320,p:11,c:50,f:9} },
+
+  { id:'B10', name:'Smoked Salmon Bagel', desc:'Toasted bagel with cream cheese, smoked salmon, and capers',
+    tags:['highProtein'], ingredients:[
+      {name:'Whole grain bagel',qty:1,unit:'medium'},{name:'Cream cheese',qty:30,unit:'g'},
+      {name:'Smoked salmon',qty:60,unit:'g'},{name:'Capers',qty:10,unit:'g'},
+      {name:'Red onion',qty:20,unit:'g'},{name:'Fresh dill',qty:5,unit:'g'}],
+    steps:['Toast bagel halves.','Spread cream cheese on each half.','Top with smoked salmon, capers, red onion, and dill.'],
+    nutrition:{cal:390,p:24,c:42,f:13} },
+
+  { id:'B11', name:'Tofu Scramble', desc:'Crumbled tofu with turmeric, veggies, and toast',
+    tags:['vegetarian','dairyFree','glutenFree','vegan'], ingredients:[
+      {name:'Firm tofu',qty:150,unit:'g'},{name:'Bell pepper',qty:50,unit:'g'},
+      {name:'Spinach',qty:40,unit:'g'},{name:'Turmeric',qty:2,unit:'g'},
+      {name:'Olive oil',qty:8,unit:'ml'},{name:'Nutritional yeast',qty:10,unit:'g'}],
+    steps:['Crumble tofu into pan with oil.','Add turmeric, pepper, and veggies.','Cook 7 mins, toss in spinach and nutritional yeast.'],
+    nutrition:{cal:250,p:20,c:12,f:14} },
+
+  { id:'B12', name:'French Toast', desc:'Thick-cut whole grain French toast with cinnamon',
+    tags:['vegetarian','budgetFriendly'], ingredients:[
+      {name:'Whole grain bread',qty:2,unit:'slices'},{name:'Eggs',qty:2,unit:'large'},
+      {name:'Milk',qty:60,unit:'ml'},{name:'Cinnamon',qty:2,unit:'g'},
+      {name:'Maple syrup',qty:15,unit:'ml'},{name:'Butter',qty:5,unit:'g'}],
+    steps:['Whisk eggs, milk, and cinnamon.','Dip bread slices in egg mixture.','Cook in buttered pan until golden on both sides.','Serve with maple syrup.'],
+    nutrition:{cal:360,p:17,c:47,f:12} },
+
+  { id:'B13', name:'Açaí Bowl', desc:'Frozen açaí blended with banana and topped with granola',
+    tags:['vegetarian','dairyFree'], ingredients:[
+      {name:'Frozen açaí packet',qty:100,unit:'g'},{name:'Banana',qty:1,unit:'medium'},
+      {name:'Almond milk',qty:80,unit:'ml'},{name:'Granola',qty:40,unit:'g'},
+      {name:'Sliced strawberries',qty:60,unit:'g'}],
+    steps:['Blend açaí, banana, and almond milk until thick.','Pour into bowl.','Top with granola and strawberries.'],
+    nutrition:{cal:380,p:7,c:65,f:11} },
+
+  { id:'B14', name:'Turkey Bacon & Eggs', desc:'Crispy turkey bacon with two sunny-side eggs',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Turkey bacon',qty:3,unit:'slices'},{name:'Eggs',qty:2,unit:'large'},
+      {name:'Olive oil',qty:5,unit:'ml'},{name:'Cherry tomatoes',qty:60,unit:'g'}],
+    steps:['Cook turkey bacon in pan until crisp.','Fry eggs in remaining oil.','Serve with cherry tomatoes.'],
+    nutrition:{cal:300,p:26,c:4,f:19} },
+
+  { id:'B15', name:'Peanut Butter Banana Toast', desc:'Whole grain toast with peanut butter and banana slices',
+    tags:['vegetarian','dairyFree','budgetFriendly'], ingredients:[
+      {name:'Whole grain bread',qty:2,unit:'slices'},{name:'Peanut butter',qty:30,unit:'g'},
+      {name:'Banana',qty:1,unit:'medium'},{name:'Honey',qty:5,unit:'g'}],
+    steps:['Toast bread.','Spread peanut butter evenly.','Lay banana slices and drizzle honey.'],
+    nutrition:{cal:390,p:13,c:57,f:14} },
+
+  { id:'B16', name:'Egg White Veggie Muffins', desc:'Baked egg white cups with peppers and herbs',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Egg whites',qty:240,unit:'ml'},{name:'Bell pepper',qty:60,unit:'g'},
+      {name:'Spinach',qty:30,unit:'g'},{name:'Onion',qty:20,unit:'g'},
+      {name:'Salt & herbs',qty:1,unit:'to taste'}],
+    steps:['Preheat oven 375°F / 190°C.','Mix egg whites with diced veggies and seasoning.','Pour into greased muffin tin.','Bake 18–20 mins until set.'],
+    nutrition:{cal:180,p:28,c:6,f:1} },
+
+  { id:'B17', name:'Bircher Muesli', desc:'Soaked oats with apple, raisins, and yogurt',
+    tags:['vegetarian'], ingredients:[
+      {name:'Rolled oats',qty:70,unit:'g'},{name:'Plain yogurt',qty:100,unit:'g'},
+      {name:'Apple',qty:1,unit:'medium'},{name:'Raisins',qty:20,unit:'g'},
+      {name:'Lemon juice',qty:5,unit:'ml'},{name:'Milk',qty:100,unit:'ml'}],
+    steps:['Mix oats, yogurt, milk, and lemon juice.','Grate apple and stir in with raisins.','Refrigerate overnight. Serve cold.'],
+    nutrition:{cal:350,p:13,c:62,f:5} },
+
+  { id:'B18', name:'Ham & Cheese Omelette', desc:'Classic diner-style omelette with ham and Swiss cheese',
+    tags:['highProtein','glutenFree'], ingredients:[
+      {name:'Eggs',qty:3,unit:'large'},{name:'Deli ham',qty:50,unit:'g'},
+      {name:'Swiss cheese',qty:30,unit:'g'},{name:'Butter',qty:5,unit:'g'},
+      {name:'Salt & pepper',qty:1,unit:'to taste'}],
+    steps:['Beat eggs with salt and pepper.','Cook in buttered pan until just set.','Add ham and cheese, fold in half.'],
+    nutrition:{cal:350,p:30,c:3,f:23} },
+
+  { id:'B19', name:'Blueberry Protein Muffins', desc:'Moist muffins made with oat flour and blueberries',
+    tags:['vegetarian','dairyFree'], ingredients:[
+      {name:'Oat flour',qty:100,unit:'g'},{name:'Vanilla protein powder',qty:30,unit:'g'},
+      {name:'Blueberries',qty:80,unit:'g'},{name:'Eggs',qty:2,unit:'large'},
+      {name:'Banana',qty:1,unit:'medium'},{name:'Baking powder',qty:5,unit:'g'}],
+    steps:['Preheat 350°F / 175°C.','Mash banana; mix with eggs.','Fold in flour, protein powder, baking powder, and blueberries.','Bake 20 mins.'],
+    nutrition:{cal:320,p:22,c:46,f:6} },
+
+  { id:'B20', name:'Shakshuka', desc:'Eggs poached in spiced tomato sauce',
+    tags:['vegetarian','glutenFree','dairyFree'], ingredients:[
+      {name:'Eggs',qty:3,unit:'large'},{name:'Canned tomatoes',qty:400,unit:'g'},
+      {name:'Onion',qty:80,unit:'g'},{name:'Bell pepper',qty:80,unit:'g'},
+      {name:'Cumin',qty:3,unit:'g'},{name:'Paprika',qty:3,unit:'g'},
+      {name:'Olive oil',qty:10,unit:'ml'}],
+    steps:['Sauté onion and pepper in oil.','Add tomatoes and spices, simmer 8 mins.','Make wells, crack eggs in.','Cover and cook 5–7 mins until whites set.'],
+    nutrition:{cal:300,p:19,c:22,f:15} },
+
+  { id:'B21', name:'Ricotta & Fig Toast', desc:'Whole grain toast with ricotta and fresh fig',
+    tags:['vegetarian'], ingredients:[
+      {name:'Whole grain bread',qty:2,unit:'slices'},{name:'Ricotta cheese',qty:80,unit:'g'},
+      {name:'Fresh figs',qty:2,unit:'medium'},{name:'Honey',qty:8,unit:'g'},
+      {name:'Walnuts',qty:10,unit:'g'}],
+    steps:['Toast bread.','Spread ricotta generously.','Top with sliced figs, walnuts, and honey.'],
+    nutrition:{cal:380,p:16,c:50,f:14} },
+
+  { id:'B22', name:'Beef & Veggie Hash', desc:'Lean ground beef with sweet potato and greens',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Lean ground beef',qty:100,unit:'g'},{name:'Sweet potato',qty:150,unit:'g'},
+      {name:'Spinach',qty:40,unit:'g'},{name:'Garlic',qty:2,unit:'cloves'},
+      {name:'Olive oil',qty:8,unit:'ml'},{name:'Salt & pepper',qty:1,unit:'to taste'}],
+    steps:['Dice sweet potato; cook in oil 8 mins.','Add beef and garlic, cook through.','Fold in spinach until wilted.'],
+    nutrition:{cal:380,p:28,c:28,f:16} },
+
+  { id:'B23', name:'Banana Oat Pancakes', desc:'Two-ingredient banana and oat pancakes, naturally sweet',
+    tags:['vegetarian','dairyFree','glutenFree','budgetFriendly'], ingredients:[
+      {name:'Ripe bananas',qty:2,unit:'medium'},{name:'Rolled oats',qty:60,unit:'g'},
+      {name:'Eggs',qty:2,unit:'large'},{name:'Cinnamon',qty:2,unit:'g'}],
+    steps:['Blend all ingredients until smooth.','Cook small pancakes on non-stick pan over medium heat.','Flip when edges set. Serve warm.'],
+    nutrition:{cal:330,p:14,c:52,f:8} },
+
+  { id:'B24', name:'Smashed Bean Toast', desc:'Seasoned white beans on toast with lemon and herbs',
+    tags:['vegetarian','dairyFree'], ingredients:[
+      {name:'Canned white beans',qty:150,unit:'g'},{name:'Whole grain bread',qty:2,unit:'slices'},
+      {name:'Lemon juice',qty:10,unit:'ml'},{name:'Garlic',qty:1,unit:'clove'},
+      {name:'Olive oil',qty:8,unit:'ml'},{name:'Fresh parsley',qty:5,unit:'g'}],
+    steps:['Drain and rinse beans; mash with lemon, garlic, oil, salt.','Toast bread.','Spread bean mixture and top with parsley.'],
+    nutrition:{cal:330,p:15,c:52,f:7} },
+
+  { id:'B25', name:'Quinoa Breakfast Bowl', desc:'Warm quinoa with poached egg and avocado',
+    tags:['vegetarian','glutenFree','highProtein'], ingredients:[
+      {name:'Quinoa, cooked',qty:150,unit:'g'},{name:'Egg',qty:1,unit:'large'},
+      {name:'Avocado',qty:0.5,unit:'medium'},{name:'Cherry tomatoes',qty:60,unit:'g'},
+      {name:'Hot sauce',qty:5,unit:'ml'},{name:'Salt',qty:1,unit:'pinch'}],
+    steps:['Warm quinoa in pan or microwave.','Poach or fry egg.','Serve quinoa topped with egg, sliced avocado, tomatoes, and hot sauce.'],
+    nutrition:{cal:360,p:17,c:40,f:15} }
+],
+
+lunch: [
+  { id:'L1', name:'Grilled Chicken Caesar Salad', desc:'Romaine, grilled chicken breast, parmesan, and croutons',
+    tags:['highProtein'], ingredients:[
+      {name:'Chicken breast',qty:150,unit:'g'},{name:'Romaine lettuce',qty:120,unit:'g'},
+      {name:'Parmesan cheese',qty:25,unit:'g'},{name:'Croutons',qty:20,unit:'g'},
+      {name:'Caesar dressing',qty:30,unit:'ml'},{name:'Lemon juice',qty:5,unit:'ml'}],
+    steps:['Season and grill chicken 6 mins per side.','Chop romaine and toss with dressing.','Slice chicken and place on top with parmesan and croutons.'],
+    nutrition:{cal:450,p:42,c:18,f:22} },
+
+  { id:'L2', name:'Lentil Soup', desc:'Hearty red lentil soup with cumin and spinach',
+    tags:['vegetarian','dairyFree','glutenFree','budgetFriendly'], ingredients:[
+      {name:'Red lentils',qty:100,unit:'g'},{name:'Onion',qty:80,unit:'g'},
+      {name:'Carrot',qty:80,unit:'g'},{name:'Canned tomatoes',qty:200,unit:'g'},
+      {name:'Cumin',qty:3,unit:'g'},{name:'Spinach',qty:40,unit:'g'},
+      {name:'Vegetable broth',qty:500,unit:'ml'}],
+    steps:['Sauté onion and carrot 5 mins.','Add lentils, tomatoes, broth, and cumin.','Simmer 20 mins.','Stir in spinach and season.'],
+    nutrition:{cal:350,p:22,c:56,f:4} },
+
+  { id:'L3', name:'Turkey & Avocado Wrap', desc:'Lean turkey, avocado, and veggies in a whole wheat wrap',
+    tags:['highProtein','budgetFriendly'], ingredients:[
+      {name:'Whole wheat tortilla',qty:1,unit:'large'},{name:'Deli turkey',qty:100,unit:'g'},
+      {name:'Avocado',qty:0.5,unit:'medium'},{name:'Romaine lettuce',qty:40,unit:'g'},
+      {name:'Tomato',qty:1,unit:'medium'},{name:'Dijon mustard',qty:10,unit:'g'}],
+    steps:['Lay tortilla flat.','Layer turkey, avocado slices, lettuce, and tomato.','Spread mustard, roll tightly.'],
+    nutrition:{cal:420,p:30,c:38,f:16} },
+
+  { id:'L4', name:'Quinoa Power Bowl', desc:'Quinoa with chickpeas, cucumber, tomato, and tahini',
+    tags:['vegetarian','dairyFree','glutenFree','highProtein'], ingredients:[
+      {name:'Quinoa, cooked',qty:150,unit:'g'},{name:'Canned chickpeas',qty:100,unit:'g'},
+      {name:'Cucumber',qty:80,unit:'g'},{name:'Cherry tomatoes',qty:80,unit:'g'},
+      {name:'Tahini',qty:20,unit:'g'},{name:'Lemon juice',qty:10,unit:'ml'}],
+    steps:['Warm quinoa and chickpeas.','Dice cucumber and halve tomatoes.','Drizzle with tahini mixed with lemon juice and a little water.'],
+    nutrition:{cal:430,p:18,c:58,f:14} },
+
+  { id:'L5', name:'Tuna Salad Lettuce Cups', desc:'Classic tuna salad served in crisp romaine cups',
+    tags:['highProtein','glutenFree','dairyFree','budgetFriendly'], ingredients:[
+      {name:'Canned tuna in water',qty:140,unit:'g'},{name:'Light mayo',qty:20,unit:'g'},
+      {name:'Celery',qty:40,unit:'g'},{name:'Red onion',qty:20,unit:'g'},
+      {name:'Romaine lettuce leaves',qty:4,unit:'large'},{name:'Lemon juice',qty:5,unit:'ml'}],
+    steps:['Drain tuna; mix with mayo, diced celery, onion, and lemon.','Season with salt and pepper.','Spoon into lettuce cups.'],
+    nutrition:{cal:250,p:32,c:6,f:10} },
+
+  { id:'L6', name:'Black Bean Burrito Bowl', desc:'Seasoned black beans over brown rice with salsa and sour cream',
+    tags:['vegetarian','budgetFriendly','glutenFree'], ingredients:[
+      {name:'Brown rice, cooked',qty:150,unit:'g'},{name:'Black beans, canned',qty:120,unit:'g'},
+      {name:'Salsa',qty:60,unit:'g'},{name:'Sour cream',qty:30,unit:'g'},
+      {name:'Corn',qty:60,unit:'g'},{name:'Lime juice',qty:10,unit:'ml'},
+      {name:'Cumin',qty:2,unit:'g'}],
+    steps:['Warm black beans with cumin and lime juice.','Layer rice in bowl.','Top with beans, salsa, corn, and sour cream.'],
+    nutrition:{cal:480,p:17,c:78,f:10} },
+
+  { id:'L7', name:'Salmon & Veggie Bowl', desc:'Baked salmon fillet over greens with lemon vinaigrette',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Salmon fillet',qty:150,unit:'g'},{name:'Mixed greens',qty:80,unit:'g'},
+      {name:'Cherry tomatoes',qty:60,unit:'g'},{name:'Cucumber',qty:60,unit:'g'},
+      {name:'Olive oil',qty:10,unit:'ml'},{name:'Lemon juice',qty:10,unit:'ml'}],
+    steps:['Season salmon; bake 375°F / 190°C for 15 mins.','Toss greens with lemon, olive oil, salt.','Serve salmon over salad.'],
+    nutrition:{cal:400,p:38,c:8,f:24} },
+
+  { id:'L8', name:'Caprese Panini', desc:'Fresh mozzarella, tomato, and basil on pressed sourdough',
+    tags:['vegetarian'], ingredients:[
+      {name:'Sourdough bread',qty:2,unit:'slices'},{name:'Fresh mozzarella',qty:60,unit:'g'},
+      {name:'Tomato',qty:1,unit:'medium'},{name:'Fresh basil',qty:10,unit:'g'},
+      {name:'Balsamic glaze',qty:10,unit:'ml'},{name:'Olive oil',qty:5,unit:'ml'}],
+    steps:['Layer mozzarella, tomato, and basil on bread.','Brush outside with olive oil.','Press on grill pan until golden. Drizzle balsamic.'],
+    nutrition:{cal:430,p:20,c:44,f:19} },
+
+  { id:'L9', name:'Chicken Noodle Soup', desc:'Classic homemade chicken soup with egg noodles',
+    tags:['highProtein','budgetFriendly'], ingredients:[
+      {name:'Chicken breast',qty:150,unit:'g'},{name:'Egg noodles',qty:60,unit:'g'},
+      {name:'Carrot',qty:80,unit:'g'},{name:'Celery',qty:60,unit:'g'},
+      {name:'Onion',qty:60,unit:'g'},{name:'Chicken broth',qty:600,unit:'ml'},
+      {name:'Garlic',qty:2,unit:'cloves'}],
+    steps:['Simmer chicken in broth 15 mins; shred.','Add diced veggies and garlic; cook 8 mins.','Add noodles; cook 6 more mins.'],
+    nutrition:{cal:380,p:34,c:38,f:8} },
+
+  { id:'L10', name:'Veggie Sushi Roll', desc:'Cucumber and avocado nori rolls with soy sauce',
+    tags:['vegetarian','dairyFree','glutenFree'], ingredients:[
+      {name:'Sushi rice, cooked',qty:150,unit:'g'},{name:'Nori sheets',qty:2,unit:'sheets'},
+      {name:'Cucumber',qty:60,unit:'g'},{name:'Avocado',qty:0.5,unit:'medium'},
+      {name:'Soy sauce',qty:15,unit:'ml'},{name:'Rice vinegar',qty:10,unit:'ml'}],
+    steps:['Season rice with vinegar.','Spread rice on nori, add cucumber and avocado.','Roll tightly using a mat. Slice and serve with soy sauce.'],
+    nutrition:{cal:360,p:7,c:68,f:8} },
+
+  { id:'L11', name:'Greek Salad with Falafel', desc:'Classic Greek salad topped with store-bought falafel',
+    tags:['vegetarian','glutenFree','dairyFree'], ingredients:[
+      {name:'Falafel patties',qty:4,unit:'pieces'},{name:'Cucumber',qty:80,unit:'g'},
+      {name:'Tomato',qty:80,unit:'g'},{name:'Kalamata olives',qty:30,unit:'g'},
+      {name:'Feta cheese',qty:40,unit:'g'},{name:'Red onion',qty:20,unit:'g'},
+      {name:'Olive oil',qty:10,unit:'ml'},{name:'Lemon juice',qty:10,unit:'ml'}],
+    steps:['Bake falafel per package directions.','Chop veggies and toss with olive oil and lemon.','Add feta and olives; top with falafel.'],
+    nutrition:{cal:440,p:16,c:42,f:24} },
+
+  { id:'L12', name:'Egg Salad Sandwich', desc:'Creamy egg salad on whole grain bread with lettuce',
+    tags:['vegetarian','budgetFriendly'], ingredients:[
+      {name:'Hard boiled eggs',qty:3,unit:'large'},{name:'Light mayo',qty:20,unit:'g'},
+      {name:'Dijon mustard',qty:5,unit:'g'},{name:'Celery',qty:30,unit:'g'},
+      {name:'Whole grain bread',qty:2,unit:'slices'},{name:'Romaine lettuce',qty:20,unit:'g'}],
+    steps:['Mash eggs with mayo, mustard, celery, salt, and pepper.','Spread on bread with lettuce.'],
+    nutrition:{cal:370,p:22,c:33,f:16} },
+
+  { id:'L13', name:'Shrimp Tacos', desc:'Seasoned shrimp in corn tortillas with slaw and lime',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Shrimp, peeled',qty:150,unit:'g'},{name:'Corn tortillas',qty:3,unit:'small'},
+      {name:'Cabbage, shredded',qty:80,unit:'g'},{name:'Lime juice',qty:15,unit:'ml'},
+      {name:'Chipotle powder',qty:2,unit:'g'},{name:'Olive oil',qty:8,unit:'ml'},
+      {name:'Cilantro',qty:10,unit:'g'}],
+    steps:['Season shrimp with chipotle, oil, and salt; cook in pan 3 mins per side.','Mix cabbage with lime juice and cilantro.','Assemble tacos.'],
+    nutrition:{cal:380,p:30,c:38,f:12} },
+
+  { id:'L14', name:'Minestrone Soup', desc:'Hearty Italian vegetable soup with beans and pasta',
+    tags:['vegetarian','dairyFree','budgetFriendly'], ingredients:[
+      {name:'Canned diced tomatoes',qty:400,unit:'g'},{name:'Cannellini beans',qty:120,unit:'g'},
+      {name:'Zucchini',qty:80,unit:'g'},{name:'Carrot',qty:80,unit:'g'},
+      {name:'Whole wheat pasta',qty:60,unit:'g'},{name:'Vegetable broth',qty:500,unit:'ml'},
+      {name:'Italian seasoning',qty:3,unit:'g'}],
+    steps:['Sauté carrot and zucchini 5 mins.','Add broth, tomatoes, beans, and seasoning.','Simmer 10 mins; add pasta and cook 8 more.'],
+    nutrition:{cal:350,p:16,c:58,f:4} },
+
+  { id:'L15', name:'BLT Chicken Sandwich', desc:'Grilled chicken with turkey bacon, lettuce, and tomato',
+    tags:['highProtein','budgetFriendly'], ingredients:[
+      {name:'Chicken breast',qty:130,unit:'g'},{name:'Whole grain bun',qty:1,unit:'bun'},
+      {name:'Turkey bacon',qty:2,unit:'slices'},{name:'Romaine lettuce',qty:20,unit:'g'},
+      {name:'Tomato',qty:0.5,unit:'medium'},{name:'Light mayo',qty:10,unit:'g'}],
+    steps:['Grill chicken breast until cooked through.','Cook turkey bacon crisp.','Assemble sandwich with all toppings.'],
+    nutrition:{cal:430,p:40,c:30,f:15} },
+
+  { id:'L16', name:'Poke Bowl', desc:'Ahi tuna over sushi rice with edamame and seaweed',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Ahi tuna, cubed',qty:130,unit:'g'},{name:'Sushi rice, cooked',qty:140,unit:'g'},
+      {name:'Edamame',qty:60,unit:'g'},{name:'Cucumber',qty:60,unit:'g'},
+      {name:'Soy sauce',qty:15,unit:'ml'},{name:'Sesame oil',qty:5,unit:'ml'},
+      {name:'Sesame seeds',qty:5,unit:'g'}],
+    steps:['Marinate tuna in soy sauce and sesame oil 5 mins.','Build bowl: rice base, then tuna, edamame, and cucumber.','Sprinkle sesame seeds.'],
+    nutrition:{cal:450,p:34,c:52,f:10} },
+
+  { id:'L17', name:'Roasted Veggie Wrap', desc:'Oven-roasted peppers, zucchini, and hummus in a wrap',
+    tags:['vegetarian','dairyFree','budgetFriendly'], ingredients:[
+      {name:'Whole wheat tortilla',qty:1,unit:'large'},{name:'Zucchini',qty:80,unit:'g'},
+      {name:'Bell pepper',qty:80,unit:'g'},{name:'Hummus',qty:60,unit:'g'},
+      {name:'Red onion',qty:40,unit:'g'},{name:'Olive oil',qty:8,unit:'ml'},
+      {name:'Feta cheese',qty:20,unit:'g'}],
+    steps:['Toss veggies in olive oil; roast 400°F / 200°C 20 mins.','Spread hummus on tortilla.','Add veggies and feta; roll.'],
+    nutrition:{cal:400,p:13,c:52,f:17} },
+
+  { id:'L18', name:'Beef & Barley Stew', desc:'Slow-simmered beef with barley and root vegetables',
+    tags:['highProtein','budgetFriendly'], ingredients:[
+      {name:'Beef stew meat',qty:130,unit:'g'},{name:'Pearl barley',qty:60,unit:'g'},
+      {name:'Carrot',qty:80,unit:'g'},{name:'Potato',qty:100,unit:'g'},
+      {name:'Beef broth',qty:500,unit:'ml'},{name:'Thyme',qty:2,unit:'g'},
+      {name:'Garlic',qty:2,unit:'cloves'}],
+    steps:['Brown beef in pot.','Add broth, barley, veggies, garlic, and thyme.','Simmer covered 45 mins until barley is tender.'],
+    nutrition:{cal:430,p:32,c:46,f:12} },
+
+  { id:'L19', name:'Mediterranean Couscous', desc:'Fluffy couscous with olives, sun-dried tomato, and chickpeas',
+    tags:['vegetarian','dairyFree','budgetFriendly'], ingredients:[
+      {name:'Couscous',qty:100,unit:'g'},{name:'Chickpeas, canned',qty:100,unit:'g'},
+      {name:'Kalamata olives',qty:30,unit:'g'},{name:'Sun-dried tomatoes',qty:30,unit:'g'},
+      {name:'Feta cheese',qty:30,unit:'g'},{name:'Olive oil',qty:10,unit:'ml'},
+      {name:'Vegetable broth',qty:150,unit:'ml'}],
+    steps:['Boil broth; pour over couscous, cover 5 mins.','Fluff with fork; stir in remaining ingredients.','Season and serve warm or cold.'],
+    nutrition:{cal:430,p:16,c:60,f:14} },
+
+  { id:'L20', name:'Chicken Gyro', desc:'Spiced chicken in pita with tzatziki and veggies',
+    tags:['highProtein'], ingredients:[
+      {name:'Chicken thigh, boneless',qty:130,unit:'g'},{name:'Whole wheat pita',qty:1,unit:'large'},
+      {name:'Tzatziki',qty:50,unit:'g'},{name:'Tomato',qty:0.5,unit:'medium'},
+      {name:'Cucumber',qty:40,unit:'g'},{name:'Red onion',qty:20,unit:'g'},
+      {name:'Greek seasoning',qty:5,unit:'g'}],
+    steps:['Marinate chicken in Greek seasoning; grill 6 mins each side.','Slice chicken; serve in pita with tzatziki, tomato, cucumber, and onion.'],
+    nutrition:{cal:480,p:36,c:42,f:18} },
+
+  { id:'L21', name:'Zucchini Noodles & Pesto', desc:'Spiralized zucchini with basil pesto and cherry tomatoes',
+    tags:['vegetarian','glutenFree'], ingredients:[
+      {name:'Zucchini',qty:300,unit:'g'},{name:'Basil pesto',qty:40,unit:'g'},
+      {name:'Cherry tomatoes',qty:80,unit:'g'},{name:'Parmesan cheese',qty:20,unit:'g'},
+      {name:'Pine nuts',qty:15,unit:'g'}],
+    steps:['Spiralize zucchini.','Toss with pesto in a bowl.','Top with cherry tomatoes, parmesan, and pine nuts.'],
+    nutrition:{cal:310,p:11,c:14,f:24} },
+
+  { id:'L22', name:'BBQ Pulled Chicken Bowl', desc:'Slow-cooked pulled chicken with coleslaw over rice',
+    tags:['highProtein','budgetFriendly','dairyFree'], ingredients:[
+      {name:'Chicken breast',qty:150,unit:'g'},{name:'BBQ sauce',qty:40,unit:'ml'},
+      {name:'Brown rice, cooked',qty:150,unit:'g'},{name:'Cabbage, shredded',qty:80,unit:'g'},
+      {name:'Apple cider vinegar',qty:10,unit:'ml'},{name:'Olive oil',qty:5,unit:'ml'}],
+    steps:['Slow cook or simmer chicken in BBQ sauce until shreddable.','Toss cabbage with vinegar and olive oil.','Serve chicken over rice with slaw.'],
+    nutrition:{cal:460,p:38,c:52,f:10} },
+
+  { id:'L23', name:'Tomato Basil Soup', desc:'Creamy blended tomato soup with grilled cheese on side',
+    tags:['vegetarian','budgetFriendly'], ingredients:[
+      {name:'Canned tomatoes',qty:400,unit:'g'},{name:'Onion',qty:80,unit:'g'},
+      {name:'Garlic',qty:3,unit:'cloves'},{name:'Heavy cream',qty:60,unit:'ml'},
+      {name:'Basil',qty:10,unit:'g'},{name:'Whole grain bread',qty:2,unit:'slices'},
+      {name:'Cheddar cheese',qty:40,unit:'g'}],
+    steps:['Sauté onion and garlic; add tomatoes.','Simmer 15 mins; blend smooth.','Stir in cream and basil.','Grill cheese on bread; serve alongside.'],
+    nutrition:{cal:430,p:15,c:46,f:20} },
+
+  { id:'L24', name:'Edamame & Soba Salad', desc:'Soba noodles tossed with edamame, ginger-sesame dressing',
+    tags:['vegetarian','dairyFree','highProtein'], ingredients:[
+      {name:'Soba noodles, cooked',qty:120,unit:'g'},{name:'Edamame',qty:100,unit:'g'},
+      {name:'Carrot, shredded',qty:60,unit:'g'},{name:'Soy sauce',qty:15,unit:'ml'},
+      {name:'Sesame oil',qty:8,unit:'ml'},{name:'Ginger',qty:5,unit:'g'},
+      {name:'Rice vinegar',qty:10,unit:'ml'}],
+    steps:['Whisk soy sauce, sesame oil, ginger, and vinegar.','Toss with noodles, edamame, and carrot.','Serve chilled or at room temp.'],
+    nutrition:{cal:410,p:22,c:56,f:12} },
+
+  { id:'L25', name:'Spicy Veggie Stir Fry', desc:'Colorful stir-fried vegetables in garlic-chili sauce over rice',
+    tags:['vegetarian','dairyFree','glutenFree','budgetFriendly'], ingredients:[
+      {name:'Broccoli',qty:100,unit:'g'},{name:'Bell pepper',qty:80,unit:'g'},
+      {name:'Snap peas',qty:80,unit:'g'},{name:'Garlic',qty:2,unit:'cloves'},
+      {name:'Soy sauce',qty:15,unit:'ml'},{name:'Chili flakes',qty:2,unit:'g'},
+      {name:'Sesame oil',qty:8,unit:'ml'},{name:'Brown rice, cooked',qty:150,unit:'g'}],
+    steps:['Heat sesame oil in wok over high heat.','Stir fry garlic 1 min; add veggies 5 mins.','Add soy sauce and chili; toss. Serve over rice.'],
+    nutrition:{cal:370,p:11,c:60,f:9} }
+],
+
+dinner: [
+  { id:'D1', name:'Baked Salmon with Asparagus', desc:'Herb-crusted salmon with roasted asparagus and lemon',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Salmon fillet',qty:180,unit:'g'},{name:'Asparagus',qty:150,unit:'g'},
+      {name:'Garlic',qty:2,unit:'cloves'},{name:'Olive oil',qty:12,unit:'ml'},
+      {name:'Lemon',qty:1,unit:'medium'},{name:'Fresh dill',qty:5,unit:'g'}],
+    steps:['Preheat oven to 400°F / 200°C.','Place salmon and asparagus on sheet pan; drizzle with oil, garlic, lemon.','Bake 15–18 mins.','Garnish with dill.'],
+    nutrition:{cal:460,p:44,c:8,f:28} },
+
+  { id:'D2', name:'Spaghetti Bolognese', desc:'Classic Italian meat sauce over whole wheat spaghetti',
+    tags:['highProtein','budgetFriendly'], ingredients:[
+      {name:'Lean ground beef',qty:150,unit:'g'},{name:'Whole wheat spaghetti',qty:90,unit:'g'},
+      {name:'Canned crushed tomatoes',qty:300,unit:'g'},{name:'Onion',qty:80,unit:'g'},
+      {name:'Garlic',qty:2,unit:'cloves'},{name:'Carrot',qty:60,unit:'g'},
+      {name:'Italian seasoning',qty:4,unit:'g'},{name:'Parmesan',qty:20,unit:'g'}],
+    steps:['Cook pasta to package directions.','Brown beef with onion, garlic, carrot.','Add tomatoes and seasoning; simmer 20 mins.','Serve over pasta with parmesan.'],
+    nutrition:{cal:560,p:40,c:62,f:16} },
+
+  { id:'D3', name:'Chicken Stir Fry', desc:'Lean chicken with broccoli and snap peas in teriyaki sauce',
+    tags:['highProtein','dairyFree'], ingredients:[
+      {name:'Chicken breast',qty:180,unit:'g'},{name:'Broccoli',qty:120,unit:'g'},
+      {name:'Snap peas',qty:80,unit:'g'},{name:'Soy sauce',qty:20,unit:'ml'},
+      {name:'Honey',qty:10,unit:'ml'},{name:'Garlic',qty:2,unit:'cloves'},
+      {name:'Ginger',qty:5,unit:'g'},{name:'Jasmine rice, cooked',qty:150,unit:'g'}],
+    steps:['Stir fry chicken pieces until cooked through.','Add veggies; cook 4 mins.','Mix soy sauce, honey, garlic, ginger; pour over and toss.','Serve with rice.'],
+    nutrition:{cal:510,p:45,c:58,f:8} },
+
+  { id:'D4', name:'Black Bean Tacos', desc:'Spiced black beans in corn tortillas with fresh guacamole',
+    tags:['vegetarian','glutenFree','dairyFree','budgetFriendly'], ingredients:[
+      {name:'Black beans, canned',qty:200,unit:'g'},{name:'Corn tortillas',qty:3,unit:'small'},
+      {name:'Avocado',qty:1,unit:'medium'},{name:'Lime juice',qty:15,unit:'ml'},
+      {name:'Cumin',qty:3,unit:'g'},{name:'Chili powder',qty:2,unit:'g'},
+      {name:'Salsa',qty:60,unit:'g'},{name:'Cilantro',qty:10,unit:'g'}],
+    steps:['Warm beans with cumin and chili powder.','Mash avocado with lime, cilantro, and salt.','Warm tortillas; assemble with beans, guacamole, and salsa.'],
+    nutrition:{cal:490,p:18,c:72,f:16} },
+
+  { id:'D5', name:'Sheet Pan Chicken & Veggies', desc:'Roasted chicken thighs with sweet potato and broccoli',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Chicken thighs, bone-in',qty:200,unit:'g'},{name:'Sweet potato',qty:150,unit:'g'},
+      {name:'Broccoli',qty:120,unit:'g'},{name:'Olive oil',qty:15,unit:'ml'},
+      {name:'Garlic powder',qty:3,unit:'g'},{name:'Paprika',qty:3,unit:'g'}],
+    steps:['Preheat 425°F / 220°C.','Toss veggies and chicken with oil and spices.','Arrange on sheet pan; roast 30–35 mins.'],
+    nutrition:{cal:490,p:38,c:34,f:22} },
+
+  { id:'D6', name:'Vegetable Curry', desc:'Creamy coconut vegetable curry with chickpeas over basmati rice',
+    tags:['vegetarian','dairyFree','glutenFree'], ingredients:[
+      {name:'Canned chickpeas',qty:150,unit:'g'},{name:'Coconut milk',qty:200,unit:'ml'},
+      {name:'Canned tomatoes',qty:200,unit:'g'},{name:'Cauliflower',qty:150,unit:'g'},
+      {name:'Spinach',qty:60,unit:'g'},{name:'Curry powder',qty:8,unit:'g'},
+      {name:'Onion',qty:80,unit:'g'},{name:'Basmati rice, cooked',qty:150,unit:'g'}],
+    steps:['Sauté onion 5 mins.','Add curry powder, cauliflower, tomatoes, coconut milk.','Simmer 15 mins.','Stir in chickpeas and spinach 2 mins. Serve with rice.'],
+    nutrition:{cal:550,p:18,c:72,f:22} },
+
+  { id:'D7', name:'Beef Stir Fry with Noodles', desc:'Tender beef strips with veggies and udon noodles',
+    tags:['highProtein'], ingredients:[
+      {name:'Beef sirloin, sliced',qty:160,unit:'g'},{name:'Udon noodles, cooked',qty:150,unit:'g'},
+      {name:'Bok choy',qty:100,unit:'g'},{name:'Soy sauce',qty:20,unit:'ml'},
+      {name:'Oyster sauce',qty:10,unit:'ml'},{name:'Sesame oil',qty:8,unit:'ml'},
+      {name:'Garlic',qty:2,unit:'cloves'}],
+    steps:['Stir fry beef over high heat 3 mins.','Add garlic and bok choy; cook 3 more mins.','Add noodles, soy sauce, and oyster sauce; toss 2 mins.','Drizzle sesame oil.'],
+    nutrition:{cal:530,p:36,c:54,f:18} },
+
+  { id:'D8', name:'Grilled Pork Tenderloin', desc:'Herb-marinated pork with roasted potatoes and green beans',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Pork tenderloin',qty:180,unit:'g'},{name:'Baby potatoes',qty:150,unit:'g'},
+      {name:'Green beans',qty:100,unit:'g'},{name:'Rosemary',qty:3,unit:'g'},
+      {name:'Garlic',qty:2,unit:'cloves'},{name:'Olive oil',qty:12,unit:'ml'}],
+    steps:['Marinate pork in garlic, rosemary, and oil 20 mins.','Roast potatoes at 400°F 25 mins.','Grill pork 15 mins, rest 5 mins.','Steam green beans and serve together.'],
+    nutrition:{cal:480,p:42,c:32,f:18} },
+
+  { id:'D9', name:'Stuffed Bell Peppers', desc:'Bell peppers filled with ground turkey, rice, and tomato sauce',
+    tags:['highProtein','glutenFree','budgetFriendly'], ingredients:[
+      {name:'Bell peppers',qty:3,unit:'large'},{name:'Ground turkey',qty:180,unit:'g'},
+      {name:'Brown rice, cooked',qty:100,unit:'g'},{name:'Canned tomatoes',qty:150,unit:'g'},
+      {name:'Onion',qty:60,unit:'g'},{name:'Italian seasoning',qty:3,unit:'g'},
+      {name:'Mozzarella',qty:40,unit:'g'}],
+    steps:['Halve and hollow peppers; bake 10 mins at 375°F.','Brown turkey with onion.','Mix with rice, tomatoes, seasoning.','Fill peppers; top with cheese; bake 20 more mins.'],
+    nutrition:{cal:460,p:38,c:38,f:16} },
+
+  { id:'D10', name:'Prawn Pasta', desc:'Garlic butter prawns over linguine with cherry tomatoes',
+    tags:['highProtein'], ingredients:[
+      {name:'Prawns/shrimp, peeled',qty:180,unit:'g'},{name:'Linguine',qty:90,unit:'g'},
+      {name:'Cherry tomatoes',qty:100,unit:'g'},{name:'Garlic',qty:3,unit:'cloves'},
+      {name:'Butter',qty:15,unit:'g'},{name:'White wine',qty:60,unit:'ml'},
+      {name:'Parsley',qty:10,unit:'g'},{name:'Lemon juice',qty:10,unit:'ml'}],
+    steps:['Cook pasta to package.','Sauté garlic in butter 1 min; add shrimp 3 mins.','Add wine, tomatoes; simmer 3 mins.','Toss with pasta, lemon, and parsley.'],
+    nutrition:{cal:510,p:36,c:58,f:12} },
+
+  { id:'D11', name:'Lamb Chops & Couscous', desc:'Herb lamb chops with lemon couscous and mint yogurt',
+    tags:['highProtein','glutenFree'], ingredients:[
+      {name:'Lamb chops',qty:200,unit:'g'},{name:'Couscous',qty:90,unit:'g'},
+      {name:'Greek yogurt',qty:60,unit:'g'},{name:'Fresh mint',qty:10,unit:'g'},
+      {name:'Lemon',qty:1,unit:'medium'},{name:'Cumin',qty:3,unit:'g'},
+      {name:'Coriander',qty:2,unit:'g'}],
+    steps:['Season lamb with cumin and coriander.','Grill or sear 4 mins per side.','Cook couscous in boiling water; fluff with lemon zest.','Mix yogurt with mint and serve alongside.'],
+    nutrition:{cal:560,p:42,c:46,f:22} },
+
+  { id:'D12', name:'Tofu Pad Thai', desc:'Rice noodles with tofu, bean sprouts, and peanut sauce',
+    tags:['vegetarian','dairyFree','glutenFree'], ingredients:[
+      {name:'Rice noodles',qty:90,unit:'g'},{name:'Firm tofu',qty:150,unit:'g'},
+      {name:'Bean sprouts',qty:80,unit:'g'},{name:'Eggs',qty:2,unit:'large'},
+      {name:'Soy sauce',qty:15,unit:'ml'},{name:'Fish sauce',qty:10,unit:'ml'},
+      {name:'Peanuts',qty:20,unit:'g'},{name:'Lime',qty:1,unit:'medium'}],
+    steps:['Soak noodles per package; drain.','Fry tofu cubes until golden.','Scramble eggs in same pan.','Add noodles, soy sauce, fish sauce, and bean sprouts. Toss.','Serve with peanuts and lime.'],
+    nutrition:{cal:510,p:28,c:62,f:18} },
+
+  { id:'D13', name:'Chicken Tikka Masala', desc:'Classic creamy Indian tomato curry with basmati rice',
+    tags:['highProtein','glutenFree'], ingredients:[
+      {name:'Chicken breast',qty:180,unit:'g'},{name:'Canned tomatoes',qty:300,unit:'g'},
+      {name:'Heavy cream',qty:80,unit:'ml'},{name:'Onion',qty:80,unit:'g'},
+      {name:'Garam masala',qty:6,unit:'g'},{name:'Cumin',qty:3,unit:'g'},
+      {name:'Garlic',qty:3,unit:'cloves'},{name:'Ginger',qty:5,unit:'g'},
+      {name:'Basmati rice, cooked',qty:150,unit:'g'}],
+    steps:['Marinate chicken in garam masala and cumin.','Brown chicken; set aside.','Sauté onion, garlic, ginger. Add tomatoes; simmer 10 mins.','Return chicken; stir in cream; simmer 8 mins. Serve with rice.'],
+    nutrition:{cal:570,p:44,c:54,f:20} },
+
+  { id:'D14', name:'Veggie Burgers', desc:'Black bean patties on whole grain buns with all the fixings',
+    tags:['vegetarian','budgetFriendly'], ingredients:[
+      {name:'Black beans, canned',qty:200,unit:'g'},{name:'Oats',qty:40,unit:'g'},
+      {name:'Whole grain buns',qty:2,unit:'buns'},{name:'Egg',qty:1,unit:'large'},
+      {name:'Garlic powder',qty:2,unit:'g'},{name:'Smoked paprika',qty:2,unit:'g'},
+      {name:'Lettuce',qty:20,unit:'g'},{name:'Tomato',qty:0.5,unit:'medium'}],
+    steps:['Mash beans; mix with oats, egg, garlic powder, paprika, salt.','Form patties; cook in pan 4 mins per side.','Serve on toasted buns with lettuce and tomato.'],
+    nutrition:{cal:450,p:20,c:68,f:10} },
+
+  { id:'D15', name:'Honey Garlic Salmon', desc:'Baked salmon glazed with honey and garlic, served with quinoa',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Salmon fillet',qty:180,unit:'g'},{name:'Honey',qty:20,unit:'ml'},
+      {name:'Soy sauce',qty:15,unit:'ml'},{name:'Garlic',qty:3,unit:'cloves'},
+      {name:'Quinoa, cooked',qty:150,unit:'g'},{name:'Broccoli',qty:100,unit:'g'}],
+    steps:['Mix honey, soy sauce, and minced garlic.','Marinate salmon 15 mins.','Bake or pan-sear 12–15 mins.','Serve over quinoa with steamed broccoli.'],
+    nutrition:{cal:510,p:46,c:46,f:16} },
+
+  { id:'D16', name:'Mushroom Risotto', desc:'Creamy arborio rice with mixed mushrooms and parmesan',
+    tags:['vegetarian'], ingredients:[
+      {name:'Arborio rice',qty:100,unit:'g'},{name:'Mixed mushrooms',qty:150,unit:'g'},
+      {name:'Parmesan cheese',qty:40,unit:'g'},{name:'Onion',qty:60,unit:'g'},
+      {name:'Vegetable broth',qty:500,unit:'ml'},{name:'White wine',qty:80,unit:'ml'},
+      {name:'Butter',qty:15,unit:'g'},{name:'Garlic',qty:2,unit:'cloves'}],
+    steps:['Sauté onion and garlic in butter.','Add rice; toast 2 mins. Add wine.','Add broth ladle by ladle, stirring, 18–20 mins.','Fold in mushrooms and parmesan.'],
+    nutrition:{cal:520,p:16,c:74,f:16} },
+
+  { id:'D17', name:'Baked Cod with Sweet Potato', desc:'Simple baked cod with sweet potato mash and green beans',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Cod fillet',qty:180,unit:'g'},{name:'Sweet potato',qty:200,unit:'g'},
+      {name:'Green beans',qty:100,unit:'g'},{name:'Olive oil',qty:12,unit:'ml'},
+      {name:'Lemon',qty:1,unit:'medium'},{name:'Paprika',qty:2,unit:'g'}],
+    steps:['Preheat 375°F.','Bake cod seasoned with paprika and lemon 18 mins.','Boil and mash sweet potato.','Steam green beans. Serve together.'],
+    nutrition:{cal:430,p:40,c:38,f:12} },
+
+  { id:'D18', name:'Turkey Chili', desc:'Hearty turkey and kidney bean chili with corn',
+    tags:['highProtein','dairyFree','glutenFree','budgetFriendly'], ingredients:[
+      {name:'Ground turkey',qty:200,unit:'g'},{name:'Kidney beans, canned',qty:150,unit:'g'},
+      {name:'Canned tomatoes',qty:300,unit:'g'},{name:'Corn kernels',qty:80,unit:'g'},
+      {name:'Onion',qty:80,unit:'g'},{name:'Chili powder',qty:8,unit:'g'},
+      {name:'Cumin',qty:3,unit:'g'},{name:'Garlic',qty:2,unit:'cloves'}],
+    steps:['Brown turkey with onion and garlic.','Add beans, tomatoes, corn, and spices.','Simmer 25 mins. Season to taste.'],
+    nutrition:{cal:480,p:44,c:44,f:12} },
+
+  { id:'D19', name:'Eggplant Parmesan', desc:'Breaded eggplant with marinara and melted mozzarella',
+    tags:['vegetarian'], ingredients:[
+      {name:'Eggplant',qty:300,unit:'g'},{name:'Marinara sauce',qty:200,unit:'g'},
+      {name:'Mozzarella cheese',qty:80,unit:'g'},{name:'Parmesan cheese',qty:30,unit:'g'},
+      {name:'Breadcrumbs',qty:40,unit:'g'},{name:'Egg',qty:1,unit:'large'},
+      {name:'Olive oil',qty:15,unit:'ml'}],
+    steps:['Slice eggplant; dip in egg, coat in breadcrumbs.','Fry until golden in oil.','Layer with marinara and cheese in baking dish.','Bake 375°F 20 mins.'],
+    nutrition:{cal:480,p:22,c:44,f:24} },
+
+  { id:'D20', name:'Fajita Bowl', desc:'Sizzling chicken and peppers over cilantro rice with pico',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Chicken breast',qty:180,unit:'g'},{name:'Bell peppers',qty:120,unit:'g'},
+      {name:'Onion',qty:80,unit:'g'},{name:'Brown rice, cooked',qty:150,unit:'g'},
+      {name:'Fajita seasoning',qty:8,unit:'g'},{name:'Olive oil',qty:10,unit:'ml'},
+      {name:'Salsa',qty:60,unit:'g'},{name:'Lime juice',qty:10,unit:'ml'}],
+    steps:['Slice chicken and peppers.','Cook in oil with fajita seasoning and onion 8 mins.','Mix rice with lime juice and cilantro.','Serve in bowls with salsa.'],
+    nutrition:{cal:490,p:42,c:54,f:12} },
+
+  { id:'D21', name:'Lemon Herb Roast Chicken', desc:'Whole roasted chicken with lemon, thyme, and root vegetables',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Chicken thighs, bone-in',qty:250,unit:'g'},{name:'Carrot',qty:100,unit:'g'},
+      {name:'Potato',qty:150,unit:'g'},{name:'Lemon',qty:1,unit:'medium'},
+      {name:'Fresh thyme',qty:5,unit:'g'},{name:'Olive oil',qty:15,unit:'ml'},
+      {name:'Garlic',qty:3,unit:'cloves'}],
+    steps:['Preheat 400°F.','Place chicken and veggies in roasting pan.','Squeeze lemon, add thyme, garlic, and oil.','Roast 40 mins until juices run clear.'],
+    nutrition:{cal:510,p:40,c:32,f:22} },
+
+  { id:'D22', name:'Shrimp Fried Rice', desc:'Classic egg fried rice with shrimp and vegetables',
+    tags:['highProtein','dairyFree'], ingredients:[
+      {name:'Shrimp, peeled',qty:150,unit:'g'},{name:'Brown rice, cooked',qty:200,unit:'g'},
+      {name:'Eggs',qty:2,unit:'large'},{name:'Soy sauce',qty:20,unit:'ml'},
+      {name:'Carrot',qty:60,unit:'g'},{name:'Peas',qty:60,unit:'g'},
+      {name:'Sesame oil',qty:8,unit:'ml'},{name:'Garlic',qty:2,unit:'cloves'}],
+    steps:['Stir fry shrimp in sesame oil 3 mins; set aside.','Scramble eggs in pan.','Add rice, carrot, peas, and garlic; stir fry 4 mins.','Add shrimp and soy sauce; toss.'],
+    nutrition:{cal:490,p:36,c:58,f:13} },
+
+  { id:'D23', name:'Pasta Primavera', desc:'Penne tossed with seasonal veggies in garlic olive oil',
+    tags:['vegetarian','dairyFree','budgetFriendly'], ingredients:[
+      {name:'Penne pasta',qty:90,unit:'g'},{name:'Zucchini',qty:80,unit:'g'},
+      {name:'Cherry tomatoes',qty:80,unit:'g'},{name:'Bell pepper',qty:80,unit:'g'},
+      {name:'Garlic',qty:3,unit:'cloves'},{name:'Olive oil',qty:15,unit:'ml'},
+      {name:'Basil',qty:10,unit:'g'},{name:'Parmesan',qty:20,unit:'g'}],
+    steps:['Cook pasta to package.','Sauté garlic and veggies in oil 6 mins.','Toss with pasta, basil, and parmesan.'],
+    nutrition:{cal:470,p:16,c:68,f:16} },
+
+  { id:'D24', name:'Beef Fajitas', desc:'Sizzling skirt steak fajitas with peppers in flour tortillas',
+    tags:['highProtein'], ingredients:[
+      {name:'Skirt steak',qty:160,unit:'g'},{name:'Flour tortillas',qty:2,unit:'large'},
+      {name:'Bell peppers',qty:120,unit:'g'},{name:'Onion',qty:80,unit:'g'},
+      {name:'Lime juice',qty:15,unit:'ml'},{name:'Cumin',qty:3,unit:'g'},
+      {name:'Chili powder',qty:2,unit:'g'},{name:'Sour cream',qty:30,unit:'g'}],
+    steps:['Marinate steak in lime, cumin, chili powder.','Grill steak 4 mins per side; rest and slice thin.','Sauté peppers and onion.','Assemble fajitas with sour cream.'],
+    nutrition:{cal:540,p:38,c:48,f:20} },
+
+  { id:'D25', name:'Lentil Dahl', desc:'Spiced red lentil dahl with basmati rice and naan',
+    tags:['vegetarian','dairyFree','glutenFree','budgetFriendly'], ingredients:[
+      {name:'Red lentils',qty:120,unit:'g'},{name:'Coconut milk',qty:160,unit:'ml'},
+      {name:'Canned tomatoes',qty:200,unit:'g'},{name:'Onion',qty:80,unit:'g'},
+      {name:'Garlic',qty:3,unit:'cloves'},{name:'Turmeric',qty:3,unit:'g'},
+      {name:'Garam masala',qty:4,unit:'g'},{name:'Basmati rice, cooked',qty:150,unit:'g'}],
+    steps:['Sauté onion and garlic; add spices 1 min.','Add lentils, tomatoes, and coconut milk.','Simmer 20 mins until thick. Season.','Serve over rice.'],
+    nutrition:{cal:500,p:22,c:76,f:14} }
+],
+
+snack: [
+  { id:'S1', name:'Apple & Peanut Butter', desc:'Sliced apple with a side of peanut butter',
+    tags:['vegetarian','dairyFree','glutenFree','budgetFriendly'], ingredients:[
+      {name:'Apple',qty:1,unit:'medium'},{name:'Peanut butter',qty:20,unit:'g'}],
+    steps:['Slice apple.','Dip in peanut butter and enjoy.'],
+    nutrition:{cal:190,p:5,c:28,f:8} },
+
+  { id:'S2', name:'Greek Yogurt & Berries', desc:'High-protein yogurt with a handful of mixed berries',
+    tags:['vegetarian','glutenFree','highProtein'], ingredients:[
+      {name:'Greek yogurt, plain',qty:150,unit:'g'},{name:'Mixed berries',qty:60,unit:'g'},
+      {name:'Honey',qty:5,unit:'g'}],
+    steps:['Top yogurt with berries and drizzle honey.'],
+    nutrition:{cal:150,p:14,c:20,f:1} },
+
+  { id:'S3', name:'Hummus & Veggies', desc:'Creamy hummus with carrot and celery sticks',
+    tags:['vegetarian','dairyFree','glutenFree','budgetFriendly'], ingredients:[
+      {name:'Hummus',qty:60,unit:'g'},{name:'Carrot sticks',qty:60,unit:'g'},
+      {name:'Celery sticks',qty:60,unit:'g'}],
+    steps:['Arrange veggies around hummus and dip.'],
+    nutrition:{cal:160,p:6,c:20,f:7} },
+
+  { id:'S4', name:'Hard Boiled Eggs', desc:'Two simple hard boiled eggs with a pinch of salt',
+    tags:['vegetarian','highProtein','glutenFree','dairyFree','budgetFriendly'], ingredients:[
+      {name:'Eggs',qty:2,unit:'large'},{name:'Salt',qty:1,unit:'pinch'}],
+    steps:['Boil eggs 10 mins. Cool, peel, and season.'],
+    nutrition:{cal:140,p:12,c:1,f:10} },
+
+  { id:'S5', name:'Rice Cakes & Almond Butter', desc:'Two rice cakes topped with almond butter',
+    tags:['vegetarian','dairyFree','glutenFree'], ingredients:[
+      {name:'Rice cakes',qty:2,unit:'large'},{name:'Almond butter',qty:20,unit:'g'}],
+    steps:['Spread almond butter on rice cakes.'],
+    nutrition:{cal:170,p:5,c:22,f:8} },
+
+  { id:'S6', name:'Trail Mix', desc:'Nuts, seeds, and dried cranberries',
+    tags:['vegetarian','dairyFree','glutenFree'], ingredients:[
+      {name:'Mixed nuts',qty:25,unit:'g'},{name:'Pumpkin seeds',qty:10,unit:'g'},
+      {name:'Dried cranberries',qty:15,unit:'g'}],
+    steps:['Mix all together and enjoy.'],
+    nutrition:{cal:200,p:6,c:18,f:13} },
+
+  { id:'S7', name:'Cottage Cheese & Pineapple', desc:'Low-fat cottage cheese with pineapple chunks',
+    tags:['vegetarian','glutenFree','highProtein'], ingredients:[
+      {name:'Low-fat cottage cheese',qty:150,unit:'g'},{name:'Pineapple chunks',qty:60,unit:'g'}],
+    steps:['Combine in a bowl.'],
+    nutrition:{cal:160,p:18,c:16,f:2} },
+
+  { id:'S8', name:'Edamame with Sea Salt', desc:'Steamed edamame lightly salted',
+    tags:['vegetarian','dairyFree','glutenFree'], ingredients:[
+      {name:'Edamame in shell',qty:120,unit:'g'},{name:'Sea salt',qty:1,unit:'pinch'}],
+    steps:['Steam edamame 5 mins. Sprinkle with sea salt.'],
+    nutrition:{cal:120,p:11,c:8,f:5} },
+
+  { id:'S9', name:'Protein Bar', desc:'Store-bought protein bar (approx 200 kcal)',
+    tags:['highProtein'], ingredients:[
+      {name:'Protein bar',qty:1,unit:'bar'}],
+    steps:['Enjoy as-is.'],
+    nutrition:{cal:200,p:20,c:22,f:7} },
+
+  { id:'S10', name:'Banana & Walnuts', desc:'Banana with a small handful of walnuts',
+    tags:['vegetarian','dairyFree','glutenFree','budgetFriendly'], ingredients:[
+      {name:'Banana',qty:1,unit:'medium'},{name:'Walnuts',qty:15,unit:'g'}],
+    steps:['Eat banana alongside walnuts.'],
+    nutrition:{cal:185,p:4,c:30,f:8} },
+
+  { id:'S11', name:'Avocado on Crispbread', desc:'Sliced avocado on rye crispbread with sea salt',
+    tags:['vegetarian','dairyFree'], ingredients:[
+      {name:'Rye crispbread',qty:2,unit:'crackers'},{name:'Avocado',qty:0.5,unit:'medium'},
+      {name:'Sea salt',qty:1,unit:'pinch'},{name:'Lemon juice',qty:3,unit:'ml'}],
+    steps:['Mash avocado with lemon and salt.','Spread on crispbread.'],
+    nutrition:{cal:180,p:3,c:18,f:11} },
+
+  { id:'S12', name:'Cheese & Whole Grain Crackers', desc:'Cheddar slices with whole grain crackers',
+    tags:['vegetarian'], ingredients:[
+      {name:'Cheddar cheese',qty:30,unit:'g'},{name:'Whole grain crackers',qty:20,unit:'g'}],
+    steps:['Pair crackers with cheese slices.'],
+    nutrition:{cal:190,p:8,c:18,f:10} },
+
+  { id:'S13', name:'Smoothie', desc:'Banana oat protein smoothie',
+    tags:['vegetarian','dairyFree','highProtein'], ingredients:[
+      {name:'Banana',qty:1,unit:'medium'},{name:'Protein powder',qty:15,unit:'g'},
+      {name:'Oat milk',qty:200,unit:'ml'}],
+    steps:['Blend and serve cold.'],
+    nutrition:{cal:220,p:18,c:34,f:3} },
+
+  { id:'S14', name:'Dark Chocolate & Almonds', desc:'A couple squares of dark chocolate with almonds',
+    tags:['vegetarian','dairyFree','glutenFree'], ingredients:[
+      {name:'Dark chocolate (70%)',qty:20,unit:'g'},{name:'Almonds',qty:15,unit:'g'}],
+    steps:['Break chocolate into squares. Enjoy with almonds.'],
+    nutrition:{cal:180,p:4,c:12,f:13} },
+
+  { id:'S15', name:'Tuna on Rice Cakes', desc:'Seasoned canned tuna on rice cakes',
+    tags:['highProtein','glutenFree','dairyFree'], ingredients:[
+      {name:'Canned tuna in water',qty:80,unit:'g'},{name:'Rice cakes',qty:2,unit:'large'},
+      {name:'Dijon mustard',qty:5,unit:'g'},{name:'Lemon juice',qty:3,unit:'ml'}],
+    steps:['Mix tuna with mustard and lemon.','Spread on rice cakes.'],
+    nutrition:{cal:160,p:20,c:14,f:3} }
+]
+};
+
+// ─── PREFERENCE TAG MAP ──────────────────────────────────────────────────────
+const PREF_TAG_MAP = {
+  highProtein: 'highProtein',
+  vegetarian: 'vegetarian',
+  dairyFree: 'dairyFree',
+  glutenFree: 'glutenFree',
+  budgetFriendly: 'budgetFriendly'
+};
+
+// ─── UI HELPERS ─────────────────────────────────────────────────────────────
+function setMode(m) {
+  state.mode = m;
+  document.getElementById('btn-daily').classList.toggle('active', m==='daily');
+  document.getElementById('btn-weekly').classList.toggle('active', m==='weekly');
+  const calLabel = document.getElementById('cal-label');
+  const modeHelper = document.getElementById('mode-helper');
+  const calDerived = document.getElementById('cal-derived');
+  if(m==='weekly'){
+    calLabel.textContent='Calories per Week';
+    document.getElementById('cal-input').placeholder='e.g. 14000';
+    document.getElementById('cal-input').value = state.calories * 7;
+    modeHelper.textContent='Enter weekly total. Daily target will be calculated automatically.';
+    calDerived.style.display='block';
+    updateDerivedCalories();
+  } else {
+    calLabel.textContent='Calories per Day';
+    document.getElementById('cal-input').placeholder='e.g. 2000';
+    document.getElementById('cal-input').value = state.calories;
+    modeHelper.textContent='Set your calorie goal per day.';
+    calDerived.style.display='none';
+  }
+}
+
+function updateDerivedCalories(){
+  if(state.mode==='weekly'){
+    const weekly = parseInt(document.getElementById('cal-input').value)||0;
+    const daily = Math.round(weekly/7);
+    document.getElementById('cal-derived').textContent = `≈ ${daily} kcal per day`;
+  }
+}
+
+document.getElementById('cal-input').addEventListener('input', updateDerivedCalories);
+
+function setMacroMode(m){
+  state.macroMode = m;
+  document.getElementById('btn-grams').classList.toggle('active', m==='grams');
+  document.getElementById('btn-pct').classList.toggle('active', m==='percent');
+  const pInput = document.getElementById('p-input');
+  const cInput = document.getElementById('c-input');
+  const fInput = document.getElementById('f-input');
+  if(m==='percent'){
+    pInput.placeholder='%'; pInput.max=100; pInput.value=30;
+    cInput.placeholder='%'; cInput.max=100; cInput.value=45;
+    fInput.placeholder='%'; fInput.max=100; fInput.value=25;
+  } else {
+    pInput.placeholder='g'; pInput.max=500; pInput.value=state.protein;
+    cInput.placeholder='g'; cInput.max=700; cInput.value=state.carbs;
+    fInput.placeholder='g'; fInput.max=300; fInput.value=state.fat;
+  }
+}
+
+// ─── VALIDATION ──────────────────────────────────────────────────────────────
+function validate(){
+  let ok = true;
+  const calVal = parseFloat(document.getElementById('cal-input').value);
+  const calErr = document.getElementById('cal-err');
+  const macroErr = document.getElementById('macro-err');
+  calErr.classList.remove('show');
+  macroErr.classList.remove('show');
+  document.getElementById('cal-input').classList.remove('error');
+
+  const minCal = state.mode==='weekly' ? 5600 : 800;
+  const maxCal = state.mode==='weekly' ? 42000 : 6000;
+  if(!calVal || calVal<minCal || calVal>maxCal){
+    calErr.textContent = state.mode==='weekly' ? 'Enter a valid weekly total (5600–42000).' : 'Enter a valid calorie value (800–6000).';
+    calErr.classList.add('show');
+    document.getElementById('cal-input').classList.add('error');
+    ok = false;
+  }
+
+  if(state.macroMode==='percent'){
+    const p = parseFloat(document.getElementById('p-input').value)||0;
+    const c = parseFloat(document.getElementById('c-input').value)||0;
+    const f = parseFloat(document.getElementById('f-input').value)||0;
+    if(Math.abs(p+c+f-100)>1){
+      macroErr.classList.add('show');
+      ok = false;
+    }
+  }
+  return ok;
+}
+
+// ─── READ SETTINGS ───────────────────────────────────────────────────────────
+function readSettings(){
+  let rawCal = parseFloat(document.getElementById('cal-input').value)||2000;
+  state.calories = state.mode==='weekly' ? Math.round(rawCal/7) : rawCal;
+  const cal = state.calories;
+
+  if(state.macroMode==='grams'){
+    state.protein = parseFloat(document.getElementById('p-input').value)||150;
+    state.carbs   = parseFloat(document.getElementById('c-input').value)||225;
+    state.fat     = parseFloat(document.getElementById('f-input').value)||67;
+  } else {
+    const p = parseFloat(document.getElementById('p-input').value)||30;
+    const c = parseFloat(document.getElementById('c-input').value)||45;
+    const f = parseFloat(document.getElementById('f-input').value)||25;
+    state.protein = Math.round((p/100)*cal/4);
+    state.carbs   = Math.round((c/100)*cal/4);
+    state.fat     = Math.round((f/100)*cal/9);
+  }
+
+  state.prefs.highProtein   = document.getElementById('pref-hp').checked;
+  state.prefs.vegetarian    = document.getElementById('pref-veg').checked;
+  state.prefs.dairyFree     = document.getElementById('pref-df').checked;
+  state.prefs.glutenFree    = document.getElementById('pref-gf').checked;
+  state.prefs.budgetFriendly= document.getElementById('pref-bf').checked;
+  state.prefs.snacks        = document.getElementById('pref-snack').checked;
+
+  const excText = document.getElementById('exclude-input').value;
+  state.excludes = excText.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+}
+
+// ─── FILTER MEALS ────────────────────────────────────────────────────────────
+function filterMeals(type){
+  let pool = MEALS[type].slice();
+  const prefs = state.prefs;
+  const activeTags = Object.keys(PREF_TAG_MAP).filter(k=>prefs[k]);
+
+  // Filter by dietary tags
+  pool = pool.filter(m => activeTags.every(tag => m.tags.includes(PREF_TAG_MAP[tag])));
+
+  // Filter by excluded ingredients
+  if(state.excludes.length){
+    pool = pool.filter(m => !m.ingredients.some(ing =>
+      state.excludes.some(ex => ing.name.toLowerCase().includes(ex))
+    ));
+  }
+
+  return pool;
+}
+
+// ─── SCORE MEAL ───────────────────────────────────────────────────────────────
+// Score how well a meal helps reach remaining targets
+function scoreMeal(meal, remaining){
+  // Lower score = better fit (euclidean-ish distance)
+  const calDiff = Math.abs(meal.nutrition.cal - remaining.cal) / remaining.cal;
+  const pDiff   = Math.abs(meal.nutrition.p   - remaining.p)   / (remaining.p||1);
+  return calDiff + pDiff * 0.5;
+}
+
+// ─── GENERATE ONE DAY ────────────────────────────────────────────────────────
+function generateDay(dayIndex, lockedMeals){
+  const targetCal = state.calories;
+  const targetP   = state.protein;
+  const targetC   = state.carbs;
+  const targetF   = state.fat;
+
+  const types = state.prefs.snacks ? ['breakfast','lunch','dinner','snack'] : ['breakfast','lunch','dinner'];
+  const splits = state.prefs.snacks
+    ? { breakfast:0.25, lunch:0.30, dinner:0.35, snack:0.10 }
+    : { breakfast:0.28, lunch:0.32, dinner:0.40 };
+
+  const day = { meals:{}, locked: lockedMeals || {} };
+  let warnings = [];
+
+  for(const type of types){
+    if(day.locked[type]){
+      day.meals[type] = day.locked[type];
+      continue;
+    }
+
+    const pool = filterMeals(type==='snack' ? 'snack' : type);
+    let relaxed = false;
+
+    let candidates = pool;
+    if(candidates.length === 0){
+      // Relax: ignore dietary prefs
+      candidates = MEALS[type==='snack'?'snack':type].filter(m =>
+        !state.excludes.length || !m.ingredients.some(ing =>
+          state.excludes.some(ex => ing.name.toLowerCase().includes(ex))
+        )
+      );
+      relaxed = true;
+      if(candidates.length === 0){
+        candidates = MEALS[type==='snack'?'snack':type];
+        warnings.push(`Could not fully respect exclusions for ${type}. Some excluded ingredients may appear.`);
+      } else {
+        warnings.push(`Dietary preferences were relaxed for ${type} (not enough matching meals).`);
+      }
+    }
+
+    const typeCal = targetCal * splits[type];
+    const typeP   = targetP   * splits[type];
+    const remaining = { cal: typeCal, p: typeP };
+
+    // Score candidates and pick best
+    candidates.sort((a,b) => scoreMeal(a,remaining) - scoreMeal(b,remaining));
+    // Pick from top 5 randomly for variety
+    const topN = Math.min(5, candidates.length);
+    const chosen = candidates[Math.floor(Math.random()*topN)];
+    day.meals[type] = chosen;
+  }
+
+  return { day, warnings };
+}
+
+// ─── GENERATE FULL PLAN ───────────────────────────────────────────────────────
+function generatePlan(){
+  if(!validate()) return;
+  readSettings();
+
+  const btn = document.getElementById('generate-btn');
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+  btn.disabled = true;
+
+  setTimeout(()=>{
+    const allWarnings = new Set();
+    const plan = [];
+    const prevLocked = state.plan ? state.plan.map(d=>d.locked||{}) : Array(7).fill({});
+
+    for(let i=0;i<7;i++){
+      const {day, warnings} = generateDay(i, prevLocked[i]);
+      warnings.forEach(w=>allWarnings.add(w));
+      plan.push(day);
+    }
+
+    state.plan = plan;
+    state.servings = {};
+    savePlan();
+    renderPlan();
+    showAlerts([...allWarnings]);
+    btn.innerHTML = '🍽️ Generate Meal Plan';
+    btn.disabled = false;
+  }, 100);
+}
+
+// ─── REGENERATE DAY ──────────────────────────────────────────────────────────
+function regenerateDay(dayIdx){
+  if(!state.plan) return;
+  readSettings();
+  const {day, warnings} = generateDay(dayIdx, state.plan[dayIdx].locked||{});
+  state.plan[dayIdx] = day;
+  savePlan();
+  renderPlan();
+  showAlerts(warnings);
+}
+
+function regenerateWeek(){
+  if(!state.plan) return;
+  readSettings();
+  // Keep locks
+  const oldLocks = state.plan.map(d=>d.locked||{});
+  const allWarnings = new Set();
+  const plan = [];
+  for(let i=0;i<7;i++){
+    const {day, warnings} = generateDay(i, oldLocks[i]);
+    warnings.forEach(w=>allWarnings.add(w));
+    plan.push(day);
+  }
+  state.plan = plan;
+  savePlan();
+  renderPlan();
+  showAlerts([...allWarnings]);
+}
+
+// ─── LOCK/UNLOCK MEAL ────────────────────────────────────────────────────────
+function toggleLock(dayIdx, type){
+  if(!state.plan) return;
+  const day = state.plan[dayIdx];
+  if(!day.locked) day.locked={};
+  if(day.locked[type]){
+    delete day.locked[type];
+  } else {
+    day.locked[type] = day.meals[type];
+  }
+  savePlan();
+  renderPlan();
+}
+
+// ─── SERVINGS ────────────────────────────────────────────────────────────────
+function getServings(dayIdx, type){
+  const key = `${dayIdx}-${type}`;
+  return state.servings[key] || 1;
+}
+
+function updateServings(dayIdx, type, val){
+  const key = `${dayIdx}-${type}`;
+  state.servings[key] = Math.max(0.5, Math.min(10, parseFloat(val)||1));
+  savePlan();
+  renderDayTotals(dayIdx);
+  renderGroceryList();
+}
+
+// ─── COMPUTE DAY TOTALS ──────────────────────────────────────────────────────
+function dayTotals(dayIdx){
+  const day = state.plan[dayIdx];
+  const types = Object.keys(day.meals);
+  let cal=0,p=0,c=0,f=0;
+  for(const type of types){
+    const m = day.meals[type];
+    const s = getServings(dayIdx, type);
+    cal += m.nutrition.cal * s;
+    p   += m.nutrition.p   * s;
+    c   += m.nutrition.c   * s;
+    f   += m.nutrition.f   * s;
+  }
+  return {cal:Math.round(cal), p:Math.round(p), c:Math.round(c), f:Math.round(f)};
+}
+
+function weekTotals(){
+  if(!state.plan) return null;
+  let cal=0,p=0,c=0,f=0;
+  for(let i=0;i<7;i++){
+    const t=dayTotals(i);
+    cal+=t.cal; p+=t.p; c+=t.c; f+=t.f;
+  }
+  return {cal,p,c,f};
+}
+
+// ─── BADGE / STATUS ──────────────────────────────────────────────────────────
+function calStatus(actual, target){
+  const ratio = actual/target;
+  if(ratio < 0.90) return {cls:'badge-warn', label:'Under'};
+  if(ratio > 1.10) return {cls:'badge-over', label:'Over'};
+  return {cls:'badge-ok', label:'On Track'};
+}
+
+function progressPct(actual, target){
+  return Math.min(150, Math.round((actual/target)*100));
+}
+
+// ─── SHOW ALERTS ─────────────────────────────────────────────────────────────
+function showAlerts(msgs){
+  const el = document.getElementById('alerts');
+  if(!msgs.length){ el.innerHTML=''; return; }
+  el.innerHTML = msgs.map(m=>`<div class="alert alert-warn">⚠️ ${m}</div>`).join('');
+}
+
+// ─── RENDER PLAN ─────────────────────────────────────────────────────────────
+function renderPlan(){
+  if(!state.plan){ return; }
+  const area = document.getElementById('plan-area');
+  area.innerHTML = '';
+
+  // Summary cards
+  const wt = weekTotals();
+  const summaryHTML = `
+    <div class="summary-section">
+      <div class="week-header">
+        <h2 class="week-title">📅 Your Week Plan</h2>
+        <div class="week-actions">
+          <button class="btn btn-secondary btn-sm" onclick="regenerateWeek()">🔄 Regenerate Week</button>
+          <button class="btn btn-secondary btn-sm" onclick="scrollToGrocery()">🛒 Grocery List</button>
+        </div>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-stat"><div class="stat-val">${wt.cal.toLocaleString()}</div><div class="stat-label">Weekly Calories</div></div>
+        <div class="summary-stat"><div class="stat-val">${Math.round(wt.cal/7).toLocaleString()}</div><div class="stat-label">Daily Avg Calories</div></div>
+        <div class="summary-stat"><div class="stat-val">${wt.p}g</div><div class="stat-label">Total Protein</div></div>
+        <div class="summary-stat"><div class="stat-val">${wt.c}g</div><div class="stat-label">Total Carbs</div></div>
+        <div class="summary-stat"><div class="stat-val">${wt.f}g</div><div class="stat-label">Total Fat</div></div>
+      </div>
+    </div>`;
+  area.insertAdjacentHTML('beforeend', summaryHTML);
+
+  // Day cards
+  const dayCards = document.createElement('div');
+  dayCards.id = 'day-cards';
+  area.appendChild(dayCards);
+
+  for(let i=0;i<7;i++){
+    dayCards.appendChild(buildDayCard(i));
+  }
+
+  // Grocery
+  area.insertAdjacentHTML('beforeend', buildGrocerySection());
+  renderGroceryItems();
+}
+
+function buildDayCard(i){
+  const day = state.plan[i];
+  const dt = dayTotals(i);
+  const status = calStatus(dt.cal, state.calories);
+  const pct = progressPct(dt.cal, state.calories);
+  const fillCls = status.cls==='badge-ok'?'fill-ok':status.cls==='badge-warn'?'fill-warn':'fill-over';
+
+  const card = document.createElement('div');
+  card.className = 'day-card';
+  card.id = `day-card-${i}`;
+
+  const types = Object.keys(day.meals);
+  const mealsHTML = types.map(type => buildMealSlot(i, type, day.meals[type], !!day.locked[type])).join('');
+
+  card.innerHTML = `
+    <div class="day-header" onclick="toggleDayCollapse(${i})">
+      <div class="day-header-left">
+        <span class="day-name">${DAYS[i]}</span>
+        <span class="day-badge ${status.cls}">${status.label}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;margin-left:16px;">
+        <div class="day-progress" style="flex:1;">
+          <div class="progress-bar-wrap"><div class="progress-bar-fill ${fillCls}" id="bar-${i}" style="width:${pct}%"></div></div>
+          <span class="day-progress-label" id="cal-label-${i}">${dt.cal} / ${state.calories} kcal</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();regenerateDay(${i})" style="white-space:nowrap">🔄 Day</button>
+      </div>
+      <span id="collapse-icon-${i}" style="margin-left:8px;color:var(--text3);">▾</span>
+    </div>
+    <div class="day-body" id="day-body-${i}">
+      <div class="meals-grid">${mealsHTML}</div>
+    </div>`;
+  return card;
+}
+
+function buildMealSlot(dayIdx, type, meal, locked){
+  const s = getServings(dayIdx, type);
+  const n = meal.nutrition;
+  const scaledCal = Math.round(n.cal*s);
+  const recipeId = `recipe-${dayIdx}-${type}`;
+  const lockLabel = locked ? '🔒' : '🔓';
+
+  return `<div class="meal-slot" id="slot-${dayIdx}-${type}">
+    <div class="meal-slot-type">${type.charAt(0).toUpperCase()+type.slice(1)}</div>
+    <div class="meal-name">${meal.name}</div>
+    <div class="meal-desc">${meal.desc}</div>
+    <div class="meal-macros">
+      <span class="macro-pill pill-cal">${scaledCal} kcal</span>
+      <span class="macro-pill pill-p">${Math.round(n.p*s)}g P</span>
+      <span class="macro-pill pill-c">${Math.round(n.c*s)}g C</span>
+      <span class="macro-pill pill-f">${Math.round(n.f*s)}g F</span>
+    </div>
+    <div class="servings-row">
+      Servings: <input type="number" value="${s}" min="0.5" max="10" step="0.5" style="width:52px;" onchange="updateServings(${dayIdx},'${type}',this.value)">
+    </div>
+    <div class="meal-actions">
+      <button class="btn btn-secondary btn-sm lock-btn ${locked?'locked':''}" onclick="toggleLock(${dayIdx},'${type}')" title="${locked?'Unlock meal':'Lock meal'}">${lockLabel}</button>
+      <button class="btn btn-secondary btn-sm" onclick="toggleRecipe('${recipeId}')">📋 Recipe</button>
+    </div>
+    <div class="recipe-panel" id="${recipeId}">
+      <div class="recipe-section">
+        <h5>Ingredients</h5>
+        <ul>${meal.ingredients.map(ing=>`<li>${scaleQty(ing.qty,s)} ${ing.unit} ${ing.name}</li>`).join('')}</ul>
+      </div>
+      <div class="recipe-section">
+        <h5>Steps</h5>
+        <ol>${meal.steps.map(st=>`<li>${st}</li>`).join('')}</ol>
+      </div>
+    </div>
+  </div>`;
+}
+
+function scaleQty(qty, servings){
+  const val = qty * servings;
+  return Number.isInteger(val) ? val : parseFloat(val.toFixed(1));
+}
+
+function toggleRecipe(id){
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('open');
+}
+
+function toggleDayCollapse(i){
+  const body = document.getElementById(`day-body-${i}`);
+  const icon = document.getElementById(`collapse-icon-${i}`);
+  if(body){
+    body.classList.toggle('collapsed');
+    if(icon) icon.textContent = body.classList.contains('collapsed') ? '▸' : '▾';
+  }
+}
+
+function renderDayTotals(dayIdx){
+  const dt = dayTotals(dayIdx);
+  const status = calStatus(dt.cal, state.calories);
+  const pct = progressPct(dt.cal, state.calories);
+  const fillCls = status.cls==='badge-ok'?'fill-ok':status.cls==='badge-warn'?'fill-warn':'fill-over';
+  const bar = document.getElementById(`bar-${dayIdx}`);
+  const label = document.getElementById(`cal-label-${dayIdx}`);
+  if(bar){ bar.style.width=pct+'%'; bar.className=`progress-bar-fill ${fillCls}`; }
+  if(label) label.textContent=`${dt.cal} / ${state.calories} kcal`;
+}
+
+// ─── GROCERY LIST ────────────────────────────────────────────────────────────
+const GROCERY_CATEGORIES = {
+  'Produce': ['apple','banana','avocado','tomato','cherry tomato','lettuce','romaine','spinach','kale','broccoli','asparagus','zucchini','bell pepper','cucumber','carrot','celery','onion','garlic','lemon','lime','ginger','snap pea','green bean','sweet potato','potato','cauliflower','eggplant','bok choy','red onion','corn','mushroom','fig','pineapple','blueberr','strawberr','berries','mixed berries'],
+  'Protein': ['chicken','beef','salmon','tuna','shrimp','prawn','pork','turkey','lamb','cod','egg','tofu','tempeh','lentil','chickpea','black bean','kidney bean','white bean','edamame','cannellini'],
+  'Dairy & Alternatives': ['yogurt','cottage cheese','milk','cream','cheese','mozzarella','parmesan','feta','cheddar','swiss','ricotta','butter','almond milk','oat milk','coconut milk'],
+  'Pantry & Grains': ['oat','rice','pasta','noodle','quinoa','couscous','bread','tortilla','pita','bagel','barley','flour','baking powder','soy sauce','olive oil','sesame oil','honey','maple syrup','canned tomato','canned bean','broth','protein powder','granola','almond butter','peanut butter','tahini','hummus','salsa','bbq sauce','mayo','mustard','pesto','basil pesto'],
+  'Spices & Herbs': ['salt','pepper','cumin','paprika','chili','turmeric','cinnamon','garlic powder','garam masala','curry powder','italian seasoning','thyme','dill','basil','parsley','cilantro','mint','rosemary','nutritional yeast','red pepper flake'],
+  'Other': []
+};
+
+function categorizeIngredient(name){
+  const lc = name.toLowerCase();
+  for(const [cat, keywords] of Object.entries(GROCERY_CATEGORIES)){
+    if(cat==='Other') continue;
+    if(keywords.some(k=>lc.includes(k))) return cat;
+  }
+  return 'Other';
+}
+
+function buildGrocerySection(){
+  return `<div class="grocery-section" id="grocery-section">
+    <hr class="section-sep">
+    <h2 class="grocery-title">🛒 Grocery List</h2>
+    <div class="grocery-actions">
+      <button class="btn btn-secondary" onclick="copyGroceryList()">📋 Copy</button>
+      <button class="btn btn-secondary" onclick="downloadGroceryList()">⬇️ Download .txt</button>
+    </div>
+    <div class="grocery-list" id="grocery-list-inner"></div>
+  </div>`;
+}
+
+function renderGroceryItems(){
+  if(!state.plan) return;
+  const el = document.getElementById('grocery-list-inner');
+  if(!el) return;
+  const items = consolidateIngredients();
+  el.innerHTML = buildGroceryHTML(items);
+}
+
+function renderGroceryList(){
+  renderGroceryItems();
+}
+
+function consolidateIngredients(){
+  // Map: "name||unit" => { name, qty, unit }
+  const map = {};
+  for(let i=0;i<7;i++){
+    const day = state.plan[i];
+    for(const type of Object.keys(day.meals)){
+      const m = day.meals[type];
+      const s = getServings(i, type);
+      for(const ing of m.ingredients){
+        const key = `${ing.name.toLowerCase()}||${ing.unit}`;
+        if(map[key]){
+          map[key].qty += ing.qty * s;
+        } else {
+          map[key] = { name: ing.name, qty: ing.qty * s, unit: ing.unit, cat: categorizeIngredient(ing.name) };
+        }
+      }
+    }
+  }
+  return Object.values(map).map(item=>({...item, qty: parseFloat(item.qty.toFixed(1)) }));
+}
+
+function buildGroceryHTML(items){
+  const byCategory = {};
+  for(const item of items){
+    if(!byCategory[item.cat]) byCategory[item.cat]=[];
+    byCategory[item.cat].push(item);
+  }
+  const catOrder = Object.keys(GROCERY_CATEGORIES);
+  let html = '';
+  for(const cat of catOrder){
+    const catItems = byCategory[cat];
+    if(!catItems||!catItems.length) continue;
+    html += `<div class="grocery-category"><div class="grocery-cat-header">${cat}</div>`;
+    catItems.sort((a,b)=>a.name.localeCompare(b.name));
+    catItems.forEach((item,idx)=>{
+      html += `<div class="grocery-item" id="gi-${cat}-${idx}">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('checked',this.checked)">
+        <span>${item.name}</span>
+        <span class="grocery-qty">${item.qty} ${item.unit}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  return html;
+}
+
+function getGroceryText(){
+  if(!state.plan) return '';
+  const items = consolidateIngredients();
+  const byCategory = {};
+  for(const item of items){
+    if(!byCategory[item.cat]) byCategory[item.cat]=[];
+    byCategory[item.cat].push(item);
+  }
+  let text = 'GROCERY LIST — NutriPlan\n';
+  text += '='.repeat(30)+'\n\n';
+  for(const [cat,catItems] of Object.entries(byCategory)){
+    if(!catItems.length) continue;
+    text += `${cat.toUpperCase()}\n`;
+    catItems.forEach(item=>{ text += `  • ${item.name} — ${item.qty} ${item.unit}\n`; });
+    text += '\n';
+  }
+  return text;
+}
+
+function copyGroceryList(){
+  const text = getGroceryText();
+  navigator.clipboard.writeText(text).then(()=>{
+    showToast('Grocery list copied!');
+  }).catch(()=>{ alert(text); });
+}
+
+function downloadGroceryList(){
+  const text = getGroceryText();
+  const blob = new Blob([text], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='grocery-list.txt'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function scrollToGrocery(){
+  const el = document.getElementById('grocery-section');
+  if(el) el.scrollIntoView({behavior:'smooth'});
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t = document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 18px;border-radius:8px;font-size:0.88rem;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2800);
+}
+
+// ─── PERSIST ─────────────────────────────────────────────────────────────────
+function savePlan(){
+  try{ localStorage.setItem('nutriplan', JSON.stringify({plan:state.plan, servings:state.servings, settings:{
+    mode:state.mode, calories:state.calories, macroMode:state.macroMode,
+    protein:state.protein, carbs:state.carbs, fat:state.fat,
+    prefs:state.prefs, excludes:state.excludes
+  }})); } catch(e){}
+}
+
+function loadSaved(){
+  try{
+    const raw = localStorage.getItem('nutriplan');
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(saved.settings){
+      const s = saved.settings;
+      state.mode=s.mode||'daily';
+      state.calories=s.calories||2000;
+      state.macroMode=s.macroMode||'grams';
+      state.protein=s.protein||150;
+      state.carbs=s.carbs||225;
+      state.fat=s.fat||67;
+      state.prefs=s.prefs||state.prefs;
+      state.excludes=s.excludes||[];
+
+      // Restore UI
+      setMode(state.mode);
+      setMacroMode(state.macroMode);
+      document.getElementById('cal-input').value = state.mode==='weekly' ? state.calories*7 : state.calories;
+      document.getElementById('p-input').value = state.protein;
+      document.getElementById('c-input').value = state.carbs;
+      document.getElementById('f-input').value = state.fat;
+      document.getElementById('pref-hp').checked = state.prefs.highProtein||false;
+      document.getElementById('pref-veg').checked = state.prefs.vegetarian||false;
+      document.getElementById('pref-df').checked = state.prefs.dairyFree||false;
+      document.getElementById('pref-gf').checked = state.prefs.glutenFree||false;
+      document.getElementById('pref-bf').checked = state.prefs.budgetFriendly||false;
+      document.getElementById('pref-snack').checked = state.prefs.snacks||false;
+      document.getElementById('exclude-input').value = state.excludes.join(', ');
+    }
+    if(saved.plan){
+      state.plan=saved.plan;
+      state.servings=saved.servings||{};
+      renderPlan();
+    }
+  } catch(e){}
+}
+
+function resetAll(){
+  if(!confirm('Reset everything and clear saved plan?')) return;
+  localStorage.removeItem('nutriplan');
+  location.reload();
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+loadSaved();
+</script>
+</body>
+</html>
