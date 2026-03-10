@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NutriPlan — Calorie & Macro Meal Planner</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=Fraunces:wght@600;700;800&display=swap');
 
   :root {
     --bg: #faf9f6;
@@ -502,6 +502,240 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   #plan-area { min-height: 200px; }
+
+  /* ── PAGE TABS ─────────────────────────────────────── */
+  .page-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--text);
+    padding: 0 32px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .page-tab {
+    padding: 10px 22px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .page-tab:hover { color: rgba(255,255,255,0.85); }
+  .page-tab.active {
+    color: #74c69d;
+    border-bottom-color: #74c69d;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── RECIPECALC PAGE ────────────────────────────────── */
+  #rc-page {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+  #rc-page .rc-section-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+  #rc-page .rc-tab-btn {
+    flex: 0 0 auto;
+    padding: 0.65rem 1.4rem;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  #rc-page .rc-tab-btn:hover { border-color: #e07a3a; color: var(--text); }
+  #rc-page .rc-tab-btn.active {
+    background: #e07a3a;
+    border-color: #e07a3a;
+    color: #fff;
+  }
+  #rc-page .rc-section { display: none; }
+  #rc-page .rc-section.active { display: block; }
+
+  #rc-page .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.25rem;
+    animation: rcFadeUp 0.35s ease;
+  }
+  @keyframes rcFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  #rc-page .card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  #rc-page label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  #rc-page input, #rc-page select, #rc-page textarea {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  #rc-page input:focus, #rc-page select:focus, #rc-page textarea:focus { border-color: #e07a3a; }
+  #rc-page select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235c564e' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 2.2rem;
+  }
+  #rc-page .rc-row { display: flex; gap: 0.75rem; margin-bottom: 0.85rem; align-items: flex-end; }
+  #rc-page .rc-row > * { flex: 1; }
+  #rc-page .rc-swap-btn {
+    align-self: flex-end;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border: 2px solid var(--border);
+    background: var(--surface2);
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin-bottom: 0.85rem;
+  }
+  #rc-page .rc-swap-btn:hover { border-color: #e07a3a; background: #fde8e2; }
+  #rc-page .rc-result-box {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  #rc-page .rc-result-value {
+    font-family: 'Fraunces', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #e07a3a;
+  }
+  #rc-page .rc-result-label { font-size: 0.85rem; color: var(--text3); }
+  #rc-page .rc-ingredient-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+    margin-bottom: 0.65rem;
+    animation: rcFadeUp 0.25s ease;
+  }
+  #rc-page .rc-ingredient-row .ing-name { flex: 2; }
+  #rc-page .rc-ingredient-row .ing-amount { flex: 1; }
+  #rc-page .rc-ingredient-row .ing-unit { flex: 1; }
+  #rc-page .rc-remove-btn {
+    width: 36px; height: 36px; flex: 0 0 36px;
+    border: none; background: #fceaea; color: #c75454;
+    border-radius: 8px; font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  #rc-page .rc-remove-btn:hover { background: #c75454; color: #fff; }
+  #rc-page .rc-add-btn {
+    width: 100%; padding: 0.6rem;
+    border: 2px dashed var(--border); background: transparent;
+    border-radius: 8px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 600; color: var(--text3);
+    cursor: pointer; transition: all 0.2s; margin-top: 0.25rem;
+  }
+  #rc-page .rc-add-btn:hover { border-color: #e07a3a; color: #e07a3a; }
+  #rc-page .rc-calc-btn {
+    width: 100%; padding: 0.8rem; border: none;
+    background: #e07a3a; color: #fff; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 1rem;
+    font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 1rem;
+  }
+  #rc-page .rc-calc-btn:hover { background: #c96a2f; transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+  #rc-page .rc-calc-btn.green { background: #5a9e6f; }
+  #rc-page .rc-calc-btn.green:hover { background: #468a5a; }
+  #rc-page .rc-servings-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.75rem; margin-bottom: 1rem; padding: 0.75rem;
+    background: var(--surface2); border-radius: 8px;
+  }
+  #rc-page .rc-servings-row label { margin: 0; text-transform: none; font-size: 0.9rem; }
+  #rc-page .rc-servings-row input { width: 60px; text-align: center; padding: 0.4rem; font-weight: 600; }
+  #rc-page .rc-macro-results { display: none; margin-top: 1.25rem; }
+  #rc-page .rc-macro-results.visible { display: block; }
+  #rc-page .rc-macro-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem; margin-bottom: 1rem;
+  }
+  #rc-page .rc-macro-card {
+    text-align: center; padding: 0.85rem 0.4rem;
+    border-radius: 10px; animation: rcFadeUp 0.35s ease;
+  }
+  #rc-page .rc-macro-card.cal { background: #fdf0e7; }
+  #rc-page .rc-macro-card.protein { background: #edf6ef; }
+  #rc-page .rc-macro-card.carbs { background: #ebf2f9; }
+  #rc-page .rc-macro-card.fat { background: #fceaea; }
+  #rc-page .rc-macro-card .num { font-family:'Fraunces',serif; font-size:1.4rem; font-weight:700; }
+  #rc-page .rc-macro-card.cal .num { color:#e07a3a; }
+  #rc-page .rc-macro-card.protein .num { color:#5a9e6f; }
+  #rc-page .rc-macro-card.carbs .num { color:#4a7fb5; }
+  #rc-page .rc-macro-card.fat .num { color:#c75454; }
+  #rc-page .rc-macro-card .lbl { font-size:0.72rem; color:var(--text2); margin-top:0.2rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+  #rc-page .rc-per-serving { text-align:center; font-size:0.85rem; color:var(--text3); padding:0.5rem; background:var(--surface2); border-radius:8px; margin-bottom:0.5rem; }
+  #rc-page .rc-breakdown-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+  #rc-page .rc-breakdown-table th { text-align:left; padding:0.4rem 0.5rem; border-bottom:2px solid var(--border); color:var(--text2); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; }
+  #rc-page .rc-breakdown-table th.right, #rc-page .rc-breakdown-table td.right { text-align:right; }
+  #rc-page .rc-breakdown-table td { padding:0.4rem 0.5rem; border-bottom:1px solid var(--border); }
+  #rc-page .rc-breakdown-table tr:last-child td { border-bottom:none; }
+  #rc-page .rc-autocomplete-wrapper { position:relative; }
+  #rc-page .rc-autocomplete-list {
+    display:none; position:absolute; top:100%; left:0; right:0;
+    background:var(--surface); border:2px solid var(--border);
+    border-radius:8px; z-index:50; max-height:200px; overflow-y:auto;
+    box-shadow:var(--shadow-lg); margin-top:2px;
+  }
+  #rc-page .rc-autocomplete-list.open { display:block; }
+  #rc-page .rc-autocomplete-item {
+    padding:0.5rem 0.75rem; cursor:pointer; display:flex;
+    justify-content:space-between; align-items:center; font-size:0.9rem;
+    transition:background 0.15s;
+  }
+  #rc-page .rc-autocomplete-item:hover { background:var(--surface2); }
+  #rc-page .rc-autocomplete-item .cat { font-size:0.72rem; color:var(--text3); background:var(--surface2); padding:1px 6px; border-radius:4px; }
+  #rc-page .rc-quick-ref { font-size:0.88rem; color:var(--text2); line-height:1.9; }
+  #rc-page .rc-parse-status { display:none; margin-top:0.75rem; padding:0.6rem; border-radius:8px; font-size:0.85rem; }
 </style>
 </head>
 <body>
@@ -511,6 +745,12 @@
   <p>Calorie &amp; Macro Meal Planner</p>
 </header>
 
+<nav class="page-tabs">
+  <button class="page-tab active" onclick="switchPage('planner')">🍽️ Meal Planner</button>
+  <button class="page-tab" onclick="switchPage('recipecalc')">⚖️ Recipe Calc</button>
+</nav>
+
+<div id="planner-page" class="page active">
 <div class="app-layout">
   <!-- SIDEBAR -->
   <aside class="sidebar">
@@ -584,6 +824,110 @@
     </div>
   </main>
 </div>
+</div><!-- end #planner-page -->
+
+<!-- ══ RECIPE CALC PAGE ══════════════════════════════════════════════════ -->
+<div id="recipecalc-page" class="page">
+  <div id="rc-page">
+
+    <div class="rc-section-tabs">
+      <button class="rc-tab-btn active" onclick="rcSwitchTab('converter')">⚖️ Unit Converter</button>
+      <button class="rc-tab-btn" onclick="rcSwitchTab('macros')">🥗 Recipe Macros</button>
+    </div>
+
+    <!-- UNIT CONVERTER -->
+    <div id="rc-converter-section" class="rc-section active">
+      <div class="card">
+        <div class="card-title"><span>📏</span> Unit Converter</div>
+        <div>
+          <label>Category</label>
+          <select id="rc-conv-category" onchange="rcUpdateUnitOptions()">
+            <option value="volume">Volume</option>
+            <option value="weight">Weight</option>
+            <option value="temperature">Temperature</option>
+          </select>
+        </div>
+        <div class="rc-row" style="margin-top:0.85rem">
+          <div>
+            <label>Amount</label>
+            <input type="number" id="rc-conv-amount" value="1" step="any" oninput="rcConvert()">
+          </div>
+          <div>
+            <label>From</label>
+            <select id="rc-conv-from" onchange="rcConvert()"></select>
+          </div>
+          <button class="rc-swap-btn" onclick="rcSwapUnits()" title="Swap units">⇄</button>
+          <div>
+            <label>To</label>
+            <select id="rc-conv-to" onchange="rcConvert()"></select>
+          </div>
+        </div>
+        <div class="rc-result-box">
+          <div class="rc-result-value" id="rc-conv-result">—</div>
+          <div class="rc-result-label" id="rc-conv-result-label">Enter an amount to convert</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🥄</span> Common Cooking Conversions</div>
+        <div class="rc-quick-ref">
+          1 cup = 240 ml = 16 tbsp<br>
+          1 tbsp = 15 ml = 3 tsp<br>
+          1 oz = 28.35 g<br>
+          1 lb = 453.6 g = 16 oz<br>
+          1 kg = 2.205 lb<br>
+          1 fl oz = 29.57 ml<br>
+          1 stick butter = 113 g = ½ cup
+        </div>
+      </div>
+    </div>
+
+    <!-- MACROS -->
+    <div id="rc-macros-section" class="rc-section">
+      <div class="card">
+        <div class="card-title"><span>📋</span> Paste a Recipe</div>
+        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:0.75rem;">Copy &amp; paste a recipe from any website and we'll try to extract the ingredients automatically.</p>
+        <textarea id="rc-recipe-paste" placeholder="Example:&#10;2 cups all-purpose flour&#10;1 lb chicken breast&#10;3 tbsp olive oil&#10;2 eggs&#10;1/2 cup Greek yogurt..." rows="6" onfocus="this.style.borderColor='#e07a3a'" onblur="this.style.borderColor='var(--border)'"></textarea>
+        <button class="rc-calc-btn green" onclick="rcParseRecipe()" style="margin-top:0.75rem;">🔍 Extract Ingredients</button>
+        <div id="rc-parse-status" class="rc-parse-status"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🥗</span> Recipe Ingredients</div>
+        <div class="rc-servings-row">
+          <label>Servings:</label>
+          <input type="number" id="rc-servings" value="4" min="1" max="100">
+        </div>
+        <div id="rc-ingredients-list"></div>
+        <button class="rc-add-btn" onclick="rcAddIngredient()">+ Add Ingredient</button>
+        <button class="rc-calc-btn" onclick="rcCalculateMacros()">Calculate Nutrition</button>
+      </div>
+
+      <div class="rc-macro-results" id="rc-macro-results">
+        <div class="card">
+          <div class="card-title"><span>📊</span> Total Recipe Nutrition</div>
+          <div class="rc-macro-grid">
+            <div class="rc-macro-card cal"><div class="num" id="rc-total-cal">0</div><div class="lbl">Calories</div></div>
+            <div class="rc-macro-card protein"><div class="num" id="rc-total-protein">0g</div><div class="lbl">Protein</div></div>
+            <div class="rc-macro-card carbs"><div class="num" id="rc-total-carbs">0g</div><div class="lbl">Carbs</div></div>
+            <div class="rc-macro-card fat"><div class="num" id="rc-total-fat">0g</div><div class="lbl">Fat</div></div>
+          </div>
+          <div class="rc-per-serving" id="rc-per-serving-text"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span>📋</span> Ingredient Breakdown</div>
+          <table class="rc-breakdown-table">
+            <thead>
+              <tr><th>Ingredient</th><th class="right">Cal</th><th class="right">P</th><th class="right">C</th><th class="right">F</th></tr>
+            </thead>
+            <tbody id="rc-breakdown-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- end #recipecalc-page -->
 
 <script>
 'use strict';
@@ -2022,8 +2366,360 @@ function resetAll(){
   location.reload();
 }
 
+// ─── PAGE SWITCHING ───────────────────────────────────────────────────────────
+function switchPage(page) {
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(page + '-page').classList.add('active');
+  document.querySelectorAll('.page-tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(page === 'planner' ? 'meal' : 'recipe')) {
+      t.classList.add('active');
+    }
+  });
+}
+
+// ─── RECIPE CALC ─────────────────────────────────────────────────────────────
+const rcConversions = {
+  volume: {
+    units: ['cup','tbsp','tsp','ml','l','fl oz','pint','quart','gallon'],
+    toBase: { 'cup':240,'tbsp':14.787,'tsp':4.929,'ml':1,'l':1000,'fl oz':29.574,'pint':473.176,'quart':946.353,'gallon':3785.41 }
+  },
+  weight: {
+    units: ['g','kg','oz','lb','mg'],
+    toBase: { 'g':1,'kg':1000,'oz':28.3495,'lb':453.592,'mg':0.001 }
+  },
+  temperature: { units: ['°F','°C','K'], custom: true }
+};
+
+function rcUpdateUnitOptions() {
+  const cat = document.getElementById('rc-conv-category').value;
+  const fromSel = document.getElementById('rc-conv-from');
+  const toSel = document.getElementById('rc-conv-to');
+  const units = rcConversions[cat].units;
+  fromSel.innerHTML = units.map(u => `<option>${u}</option>`).join('');
+  toSel.innerHTML = units.map(u => `<option>${u}</option>`).join('');
+  if (units.length > 1) toSel.selectedIndex = 1;
+  rcConvert();
+}
+
+function rcConvert() {
+  const cat = document.getElementById('rc-conv-category').value;
+  const amount = parseFloat(document.getElementById('rc-conv-amount').value);
+  const from = document.getElementById('rc-conv-from').value;
+  const to = document.getElementById('rc-conv-to').value;
+  const resEl = document.getElementById('rc-conv-result');
+  const labelEl = document.getElementById('rc-conv-result-label');
+  if (isNaN(amount)) { resEl.textContent = '—'; labelEl.textContent = 'Enter an amount'; return; }
+  let result;
+  if (cat === 'temperature') {
+    result = rcConvertTemp(amount, from, to);
+  } else {
+    const base = amount * rcConversions[cat].toBase[from];
+    result = base / rcConversions[cat].toBase[to];
+  }
+  const formatted = result % 1 === 0 ? result : result.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  resEl.textContent = formatted;
+  labelEl.textContent = `${amount} ${from} = ${formatted} ${to}`;
+}
+
+function rcConvertTemp(val, from, to) {
+  let celsius;
+  if (from === '°C') celsius = val;
+  else if (from === '°F') celsius = (val - 32) * 5/9;
+  else celsius = val - 273.15;
+  if (to === '°C') return celsius;
+  if (to === '°F') return celsius * 9/5 + 32;
+  return celsius + 273.15;
+}
+
+function rcSwapUnits() {
+  const f = document.getElementById('rc-conv-from');
+  const t = document.getElementById('rc-conv-to');
+  const tmp = f.value; f.value = t.value; t.value = tmp;
+  rcConvert();
+}
+
+const rcFoodDB = [
+  { name:'Chicken Breast', cat:'Meat', cal:165, protein:31, carbs:0, fat:3.6 },
+  { name:'Ground Beef (85%)', cat:'Meat', cal:250, protein:26, carbs:0, fat:15 },
+  { name:'Salmon', cat:'Fish', cal:208, protein:20, carbs:0, fat:13 },
+  { name:'Shrimp', cat:'Fish', cal:99, protein:24, carbs:0.2, fat:0.3 },
+  { name:'Tuna (canned)', cat:'Fish', cal:116, protein:26, carbs:0, fat:0.8 },
+  { name:'Egg (1 large = 50g)', cat:'Dairy', cal:155, protein:13, carbs:1.1, fat:11 },
+  { name:'Whole Milk', cat:'Dairy', cal:61, protein:3.2, carbs:4.8, fat:3.3 },
+  { name:'Cheddar Cheese', cat:'Dairy', cal:403, protein:25, carbs:1.3, fat:33 },
+  { name:'Greek Yogurt', cat:'Dairy', cal:59, protein:10, carbs:3.6, fat:0.4 },
+  { name:'Butter', cat:'Dairy', cal:717, protein:0.9, carbs:0.1, fat:81 },
+  { name:'Cream Cheese', cat:'Dairy', cal:342, protein:6, carbs:4, fat:34 },
+  { name:'Mozzarella', cat:'Dairy', cal:280, protein:28, carbs:3.1, fat:17 },
+  { name:'Parmesan', cat:'Dairy', cal:431, protein:38, carbs:4, fat:29 },
+  { name:'White Rice (cooked)', cat:'Grains', cal:130, protein:2.7, carbs:28, fat:0.3 },
+  { name:'Brown Rice (cooked)', cat:'Grains', cal:112, protein:2.3, carbs:24, fat:0.8 },
+  { name:'Pasta (cooked)', cat:'Grains', cal:131, protein:5, carbs:25, fat:1.1 },
+  { name:'Bread (white)', cat:'Grains', cal:265, protein:9, carbs:49, fat:3.2 },
+  { name:'Bread (whole wheat)', cat:'Grains', cal:247, protein:13, carbs:41, fat:3.4 },
+  { name:'Oats (dry)', cat:'Grains', cal:389, protein:17, carbs:66, fat:6.9 },
+  { name:'Flour (all-purpose)', cat:'Grains', cal:364, protein:10, carbs:76, fat:1 },
+  { name:'Tortilla (flour)', cat:'Grains', cal:312, protein:8, carbs:52, fat:8 },
+  { name:'Potato', cat:'Vegetables', cal:77, protein:2, carbs:17, fat:0.1 },
+  { name:'Sweet Potato', cat:'Vegetables', cal:86, protein:1.6, carbs:20, fat:0.1 },
+  { name:'Broccoli', cat:'Vegetables', cal:34, protein:2.8, carbs:7, fat:0.4 },
+  { name:'Spinach', cat:'Vegetables', cal:23, protein:2.9, carbs:3.6, fat:0.4 },
+  { name:'Carrot', cat:'Vegetables', cal:41, protein:0.9, carbs:10, fat:0.2 },
+  { name:'Tomato', cat:'Vegetables', cal:18, protein:0.9, carbs:3.9, fat:0.2 },
+  { name:'Onion', cat:'Vegetables', cal:40, protein:1.1, carbs:9.3, fat:0.1 },
+  { name:'Bell Pepper', cat:'Vegetables', cal:31, protein:1, carbs:6, fat:0.3 },
+  { name:'Garlic', cat:'Vegetables', cal:149, protein:6.4, carbs:33, fat:0.5 },
+  { name:'Mushrooms', cat:'Vegetables', cal:22, protein:3.1, carbs:3.3, fat:0.3 },
+  { name:'Avocado', cat:'Vegetables', cal:160, protein:2, carbs:9, fat:15 },
+  { name:'Corn', cat:'Vegetables', cal:86, protein:3.3, carbs:19, fat:1.4 },
+  { name:'Zucchini', cat:'Vegetables', cal:17, protein:1.2, carbs:3.1, fat:0.3 },
+  { name:'Banana', cat:'Fruit', cal:89, protein:1.1, carbs:23, fat:0.3 },
+  { name:'Apple', cat:'Fruit', cal:52, protein:0.3, carbs:14, fat:0.2 },
+  { name:'Strawberry', cat:'Fruit', cal:32, protein:0.7, carbs:7.7, fat:0.3 },
+  { name:'Blueberry', cat:'Fruit', cal:57, protein:0.7, carbs:14, fat:0.3 },
+  { name:'Lemon Juice', cat:'Fruit', cal:22, protein:0.4, carbs:6.9, fat:0.2 },
+  { name:'Orange', cat:'Fruit', cal:47, protein:0.9, carbs:12, fat:0.1 },
+  { name:'Olive Oil', cat:'Oils', cal:884, protein:0, carbs:0, fat:100 },
+  { name:'Vegetable Oil', cat:'Oils', cal:884, protein:0, carbs:0, fat:100 },
+  { name:'Coconut Oil', cat:'Oils', cal:862, protein:0, carbs:0, fat:100 },
+  { name:'Sugar (white)', cat:'Pantry', cal:387, protein:0, carbs:100, fat:0 },
+  { name:'Brown Sugar', cat:'Pantry', cal:380, protein:0, carbs:98, fat:0 },
+  { name:'Honey', cat:'Pantry', cal:304, protein:0.3, carbs:82, fat:0 },
+  { name:'Maple Syrup', cat:'Pantry', cal:260, protein:0, carbs:67, fat:0.1 },
+  { name:'Peanut Butter', cat:'Pantry', cal:588, protein:25, carbs:20, fat:50 },
+  { name:'Almond Butter', cat:'Pantry', cal:614, protein:21, carbs:19, fat:56 },
+  { name:'Almonds', cat:'Nuts', cal:579, protein:21, carbs:22, fat:50 },
+  { name:'Walnuts', cat:'Nuts', cal:654, protein:15, carbs:14, fat:65 },
+  { name:'Cashews', cat:'Nuts', cal:553, protein:18, carbs:30, fat:44 },
+  { name:'Black Beans (cooked)', cat:'Legumes', cal:132, protein:9, carbs:24, fat:0.5 },
+  { name:'Chickpeas (cooked)', cat:'Legumes', cal:164, protein:9, carbs:27, fat:2.6 },
+  { name:'Lentils (cooked)', cat:'Legumes', cal:116, protein:9, carbs:20, fat:0.4 },
+  { name:'Tofu (firm)', cat:'Protein', cal:144, protein:17, carbs:3, fat:8 },
+  { name:'Bacon', cat:'Meat', cal:541, protein:37, carbs:1.4, fat:42 },
+  { name:'Sausage (pork)', cat:'Meat', cal:301, protein:18, carbs:0, fat:25 },
+  { name:'Turkey Breast', cat:'Meat', cal:135, protein:30, carbs:0, fat:1 },
+  { name:'Sour Cream', cat:'Dairy', cal:198, protein:2.4, carbs:4.6, fat:19 },
+  { name:'Heavy Cream', cat:'Dairy', cal:340, protein:2.8, carbs:2.8, fat:36 },
+  { name:'Cocoa Powder', cat:'Pantry', cal:228, protein:20, carbs:58, fat:14 },
+  { name:'Chocolate (dark)', cat:'Pantry', cal:546, protein:5, carbs:60, fat:31 },
+  { name:'Soy Sauce', cat:'Pantry', cal:53, protein:8, carbs:5, fat:0.6 },
+];
+
+let rcIngredientCount = 0;
+
+function rcAddIngredient() {
+  rcIngredientCount++;
+  const id = rcIngredientCount;
+  const div = document.createElement('div');
+  div.className = 'rc-ingredient-row';
+  div.id = `rc-ing-row-${id}`;
+  div.innerHTML = `
+    <div class="ing-name rc-autocomplete-wrapper">
+      ${rcIngredientCount === 1 ? '<label>Ingredient</label>' : ''}
+      <input type="text" placeholder="Type to search..." id="rc-ing-name-${id}" oninput="rcShowSuggestions(${id})" onfocus="rcShowSuggestions(${id})" autocomplete="off">
+      <div class="rc-autocomplete-list" id="rc-ac-list-${id}"></div>
+    </div>
+    <div class="ing-amount">
+      ${rcIngredientCount === 1 ? '<label>Amount</label>' : ''}
+      <input type="number" placeholder="100" id="rc-ing-amt-${id}" step="any">
+    </div>
+    <div class="ing-unit">
+      ${rcIngredientCount === 1 ? '<label>Unit</label>' : ''}
+      <select id="rc-ing-unit-${id}">
+        <option value="g">g</option>
+        <option value="oz">oz</option>
+        <option value="cup">cup</option>
+        <option value="tbsp">tbsp</option>
+        <option value="tsp">tsp</option>
+        <option value="ml">ml</option>
+        <option value="lb">lb</option>
+        <option value="kg">kg</option>
+      </select>
+    </div>
+    <button class="rc-remove-btn" onclick="rcRemoveIngredient(${id})">×</button>
+  `;
+  document.getElementById('rc-ingredients-list').appendChild(div);
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest(`#rc-ing-row-${id}`)) {
+      const list = document.getElementById(`rc-ac-list-${id}`);
+      if (list) list.classList.remove('open');
+    }
+  });
+}
+
+function rcRemoveIngredient(id) {
+  const row = document.getElementById(`rc-ing-row-${id}`);
+  if (row) row.remove();
+}
+
+function rcShowSuggestions(id) {
+  const input = document.getElementById(`rc-ing-name-${id}`);
+  const list = document.getElementById(`rc-ac-list-${id}`);
+  const val = input.value.toLowerCase().trim();
+  if (!val) { list.classList.remove('open'); return; }
+  const matches = rcFoodDB.filter(f => f.name.toLowerCase().includes(val)).slice(0, 8);
+  if (matches.length === 0) { list.classList.remove('open'); return; }
+  list.innerHTML = matches.map(f =>
+    `<div class="rc-autocomplete-item" onclick="rcSelectFood(${id},'${f.name.replace(/'/g,"\\'")}')">
+      ${f.name}<span class="cat">${f.cat}</span>
+    </div>`
+  ).join('');
+  list.classList.add('open');
+}
+
+function rcSelectFood(id, name) {
+  document.getElementById(`rc-ing-name-${id}`).value = name;
+  document.getElementById(`rc-ac-list-${id}`).classList.remove('open');
+}
+
+function rcConvertToGrams(amount, unit) {
+  const factors = { 'g':1,'kg':1000,'oz':28.3495,'lb':453.592,'cup':240,'tbsp':14.787,'tsp':4.929,'ml':1 };
+  return amount * (factors[unit] || 1);
+}
+
+function rcCalculateMacros() {
+  const rows = document.querySelectorAll('.rc-ingredient-row');
+  let totalCal=0, totalP=0, totalC=0, totalF=0;
+  const breakdown = [];
+  rows.forEach(row => {
+    const rowId = row.id.replace('rc-ing-row-', '');
+    const nameInput = document.getElementById('rc-ing-name-' + rowId);
+    const amtInput = document.getElementById('rc-ing-amt-' + rowId);
+    const unitSelect = document.getElementById('rc-ing-unit-' + rowId);
+    if (!nameInput || !amtInput || !unitSelect) return;
+    const name = nameInput.value.trim();
+    const amount = parseFloat(amtInput.value);
+    const unit = unitSelect.value;
+    if (!name || isNaN(amount) || amount <= 0) return;
+    let food = rcFoodDB.find(f => f.name.toLowerCase() === name.toLowerCase());
+    if (!food) food = rcFoodDB.find(f => f.name.toLowerCase().startsWith(name.toLowerCase()));
+    if (!food) food = rcFoodDB.find(f => f.name.toLowerCase().includes(name.toLowerCase()));
+    if (!food) { breakdown.push({ name, cal:'?', p:'?', c:'?', f:'?' }); return; }
+    const grams = rcConvertToGrams(amount, unit);
+    const mult = grams / 100;
+    const cal = Math.round(food.cal * mult);
+    const p = +(food.protein * mult).toFixed(1);
+    const c = +(food.carbs * mult).toFixed(1);
+    const f = +(food.fat * mult).toFixed(1);
+    totalCal += cal; totalP += p; totalC += c; totalF += f;
+    breakdown.push({ name, cal, p, c, f });
+  });
+  const servings = parseInt(document.getElementById('rc-servings').value) || 1;
+  document.getElementById('rc-total-cal').textContent = totalCal;
+  document.getElementById('rc-total-protein').textContent = totalP.toFixed(1) + 'g';
+  document.getElementById('rc-total-carbs').textContent = totalC.toFixed(1) + 'g';
+  document.getElementById('rc-total-fat').textContent = totalF.toFixed(1) + 'g';
+  const perCal = Math.round(totalCal/servings);
+  document.getElementById('rc-per-serving-text').textContent =
+    `Per serving (${servings}): ${perCal} cal · ${(totalP/servings).toFixed(1)}g protein · ${(totalC/servings).toFixed(1)}g carbs · ${(totalF/servings).toFixed(1)}g fat`;
+  document.getElementById('rc-breakdown-body').innerHTML = breakdown.map(b =>
+    `<tr><td>${b.name}</td><td class="right">${b.cal}</td><td class="right">${b.p}</td><td class="right">${b.c}</td><td class="right">${b.f}</td></tr>`
+  ).join('');
+  document.getElementById('rc-macro-results').classList.add('visible');
+}
+
+function rcSwitchTab(tab) {
+  document.querySelectorAll('.rc-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.rc-section').forEach(s => s.classList.remove('active'));
+  if (tab === 'converter') {
+    document.querySelectorAll('.rc-tab-btn')[0].classList.add('active');
+    document.getElementById('rc-converter-section').classList.add('active');
+  } else {
+    document.querySelectorAll('.rc-tab-btn')[1].classList.add('active');
+    document.getElementById('rc-macros-section').classList.add('active');
+  }
+}
+
+function rcParseRecipe() {
+  const text = document.getElementById('rc-recipe-paste').value.trim();
+  const status = document.getElementById('rc-parse-status');
+  if (!text) {
+    status.style.display = 'block';
+    status.style.background = '#fceaea'; status.style.color = '#c75454';
+    status.textContent = 'Please paste a recipe first!';
+    return;
+  }
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const unitMap = {
+    'cup':'cup','cups':'cup','tbsp':'tbsp','tablespoon':'tbsp','tablespoons':'tbsp',
+    'tsp':'tsp','teaspoon':'tsp','teaspoons':'tsp','oz':'oz','ounce':'oz','ounces':'oz',
+    'lb':'lb','lbs':'lb','pound':'lb','pounds':'lb','g':'g','gram':'g','grams':'g',
+    'kg':'kg','kilogram':'kg','kilograms':'kg','ml':'ml','milliliter':'ml','milliliters':'ml',
+    'l':'ml','liter':'ml','liters':'ml','clove':'piece','cloves':'piece','slice':'piece',
+    'slices':'piece','piece':'piece','pieces':'piece','large':'piece','medium':'piece',
+    'small':'piece','can':'piece','cans':'piece','bunch':'piece','head':'piece',
+    'pinch':'tsp','dash':'tsp',
+  };
+  const fractionMap = {
+    '½':'0.5','⅓':'0.333','⅔':'0.667','¼':'0.25','¾':'0.75','⅛':'0.125',
+    '⅜':'0.375','⅝':'0.625','⅞':'0.875','⅕':'0.2','⅖':'0.4','⅗':'0.6',
+    '⅘':'0.8','⅙':'0.167','⅚':'0.833',
+  };
+  const numberPattern = /^([\d½⅓⅔¼¾⅛⅜⅝⅞⅕⅖⅗⅘⅙⅚/.\s-]+)/;
+  const unitPattern = new RegExp('^(' + Object.keys(unitMap).join('|') + ')\\b\\.?\\s*', 'i');
+  document.getElementById('rc-ingredients-list').innerHTML = '';
+  rcIngredientCount = 0;
+  let matched = 0, unmatched = [];
+  lines.forEach(line => {
+    let clean = line.replace(/^[-•*▪▸►●○◦‣⁃]\s*/, '').replace(/^\d+[.)]\s*/, '').trim();
+    if (!clean || clean.length < 2) return;
+    if (/^(for the|instructions|directions|steps|method|notes|preparation|preheat|cook |bake |mix |stir |add |place |set |let |serve|garnish)/i.test(clean)) return;
+    if (clean.length > 120) return;
+    let amount = null, unit = 'g', name = clean;
+    const numMatch = clean.match(numberPattern);
+    if (numMatch) {
+      let numStr = numMatch[1].trim();
+      for (const [frac, val] of Object.entries(fractionMap)) numStr = numStr.replace(frac, val);
+      numStr = numStr.replace(/(\d+)\s*\/\s*(\d+)/g, (m, a, b) => (parseFloat(a)/parseFloat(b)).toString());
+      const parts = numStr.trim().split(/\s+/).filter(p => p);
+      if (parts.length > 0) amount = parts.reduce((sum, p) => sum + (parseFloat(p) || 0), 0);
+      name = clean.slice(numMatch[0].length).trim();
+    }
+    const unitMatch = name.match(unitPattern);
+    if (unitMatch) {
+      const matchedUnit = unitMatch[1].toLowerCase();
+      if (unitMap[matchedUnit]) {
+        unit = unitMap[matchedUnit];
+        if (unit === 'piece') unit = 'g';
+        name = name.slice(unitMatch[0].length).trim();
+      }
+    }
+    name = name.replace(/^of\s+/i, '').replace(/,.*$/, '').replace(/\(.*?\)/g, '').trim();
+    if (!name) return;
+    if (!amount || amount <= 0) amount = 100;
+    if (unit === 'g' && amount < 20 && !unitMatch) amount = amount * 100;
+    const nameLower = name.toLowerCase();
+    let dbMatch = rcFoodDB.find(f => f.name.toLowerCase() === nameLower);
+    if (!dbMatch) dbMatch = rcFoodDB.find(f => nameLower.includes(f.name.toLowerCase().split('(')[0].trim().toLowerCase()));
+    if (!dbMatch) dbMatch = rcFoodDB.find(f => f.name.toLowerCase().split('(')[0].trim().toLowerCase().split(' ').some(w => w.length > 3 && nameLower.includes(w)));
+    rcAddIngredient();
+    const id = rcIngredientCount;
+    document.getElementById('rc-ing-name-' + id).value = dbMatch ? dbMatch.name : name;
+    document.getElementById('rc-ing-amt-' + id).value = parseFloat(amount.toFixed(1));
+    const unitSelect = document.getElementById('rc-ing-unit-' + id);
+    const unitOptions = Array.from(unitSelect.options).map(o => o.value);
+    if (unitOptions.includes(unit)) unitSelect.value = unit;
+    if (dbMatch) matched++;
+    else unmatched.push(name);
+  });
+  status.style.display = 'block';
+  if (rcIngredientCount === 0) {
+    status.style.background = '#fceaea'; status.style.color = '#c75454';
+    status.textContent = "Couldn't find any ingredients. Try pasting just the ingredient list.";
+  } else if (unmatched.length > 0) {
+    status.style.background = '#fdf0e7'; status.style.color = '#c96a2f';
+    status.innerHTML = `✅ Found <strong>${rcIngredientCount}</strong> ingredients (${matched} matched). ⚠️ Not in database: ${unmatched.join(', ')}`;
+  } else {
+    status.style.background = '#edf6ef'; status.style.color = '#468a5a';
+    status.textContent = `✅ Found ${rcIngredientCount} ingredients — all matched! Hit "Calculate Nutrition" below.`;
+  }
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
 loadSaved();
+rcUpdateUnitOptions();
+rcAddIngredient();
 </script>
 </body>
 </html>
